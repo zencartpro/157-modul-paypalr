@@ -1,0 +1,2 @@
+<?php
+define('MODULE_PAYMENT_PAYPALR_WEBHOOK_TRY_AGAIN', 'Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart. Sollten weiterhin Schwierigkeiten auftreten, kontaktieren Sie uns bitte.');

@@ -1155,7 +1155,7 @@ class paypalr extends base
         // If the order's request-creation resulted in a calculation mismatch, send an alert if
         // configured.
         //
-//        $order_amount_mismatch = $create_order_request->getBreakdownMismatch();
+        $order_amount_mismatch = $create_order_request->getBreakdownMismatch();
 //        if (count($order_amount_mismatch) !== 0) {
 //            $this->sendAlertEmail(
 //                MODULE_PAYMENT_PAYPALR_ALERT_SUBJECT_TOTAL_MISMATCH,

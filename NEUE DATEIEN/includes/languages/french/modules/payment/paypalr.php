@@ -5,11 +5,11 @@
 * Zen Cart German Version - www.zen-cart-pro.at
 * @copyright Portions Copyright 2003 osCommerce
 * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
-* @version $Id: paypalr.php 2025-06-13 14:57:24Z webchills $
+* @version $Id: paypalr.php 2025-06-13 13:54:24Z webchills $
 */
 
 define('MODULE_PAYMENT_PAYPALR_TEXT_TITLE', 'PayPal Checkout');
-define('MODULE_PAYMENT_PAYPALR_SUBTITLE', '(Verwenden Sie entweder Ihr <b>PayPal-Konto</b> oder eine <b>Kreditkarte</b>)');
+define('MODULE_PAYMENT_PAYPALR_SUBTITLE', '(Utilisez soit votre <b>compte PayPal</b>, soit une <b>carte de crédit</b>)');
 define('MODULE_PAYMENT_PAYPALR_TEXT_TITLE_ADMIN', 'PayPal Checkout (RESTful)');
 define('MODULE_PAYMENT_PAYPALR_TEXT_DESCRIPTION', '<strong>PayPal</strong>');
 define('MODULE_PAYMENT_PAYPALR_TEXT_TYPE', 'PayPal Checkout');
@@ -25,49 +25,49 @@ define('MODULE_PAYMENT_PAYPALR_AUTO_DISABLED', ' Das Zahlungsmodul wurde automat
 // -----
 // Storefront-Nachrichten.
 //
-define('MODULE_PAYMENT_PALPALR_PAYING_WITH_PAYPAL', 'Zahlung über PayPal Wallet'); //- Wird von der Bestätigungsmethode verwendet, wenn über PayPal Checkout (paypal) bezahlt wird
-define('MODULE_PAYMENT_PAYPALR_TEXT_NOTIFICATION_MISSING', 'Wir können Ihre %s-Zahlung derzeit nicht verarbeiten. Bitte kontaktieren Sie uns, wenn Sie Hilfe benötigen.'); //- %s wird mit MODULE_PAYMENT_PAYPALR_TEXT_TITLE ausgefüllt
-define('MODULE_PAYMENT_PAYPALR_TEXT_GENERAL_ERROR', 'Wir können Ihre %s-Zahlung derzeit nicht verarbeiten. Bitte kontaktieren Sie uns, wenn Sie Hilfe benötigen.'); //- %s wird mit MODULE_PAYMENT_PAYPALR_TEXT_TITLE ausgefüllt
-define('MODULE_PAYMENT_PAYPALR_TEXT_STATUS_MISMATCH', 'Wir konnten Ihre Zahlungsanforderung nicht verarbeiten.');
-define('MODULE_PAYMENT_PAYPALR_TEXT_PLEASE_NOTE', 'Bitte beachten Sie:');
-define('MODULE_PAYMENT_PAYPALR_UNSUPPORTED_BILLING_COUNTRY', 'Das Land Ihrer Rechnungsadresse wird von PayPal nicht unterstützt; Kreditkartenzahlungen sind nicht möglich.');
-define('MODULE_PAYMENT_PAYPALR_UNSUPPORTED_SHIPPING_COUNTRY', 'Das Land Ihrer Lieferadresse wird von PayPal nicht unterstützt; diese Zahlungsmethode kann nicht verwendet werden.');
+define('MODULE_PAYMENT_PALPALR_PAYING_WITH_PAYPAL', 'Paiement via PayPal Wallet'); //- Wird von der Bestätigungsmethode verwendet, wenn über PayPal Checkout (paypal) bezahlt wird
+define('MODULE_PAYMENT_PAYPALR_TEXT_NOTIFICATION_MISSING', 'Nous ne pouvons actuellement pas traiter votre paiement %s. Veuillez nous contacter si vous avez besoin d\'aide.'); //- %s wird mit MODULE_PAYMENT_PAYPALR_TEXT_TITLE ausgefüllt
+define('MODULE_PAYMENT_PAYPALR_TEXT_GENERAL_ERROR', 'Nous ne pouvons actuellement pas traiter votre paiement %s. Veuillez nous contacter si vous avez besoin d\'aide.'); //- %s wird mit MODULE_PAYMENT_PAYPALR_TEXT_TITLE ausgefüllt
+define('MODULE_PAYMENT_PAYPALR_TEXT_STATUS_MISMATCH', 'Nous n\'avons pas pu traiter votre demande de paiement.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_PLEASE_NOTE', 'Veuillez noter:');
+define('MODULE_PAYMENT_PAYPALR_UNSUPPORTED_BILLING_COUNTRY', 'Le pays de votre adresse de facturation n\'est pas pris en charge par PayPal ; les paiements par carte de crédit ne sont pas possibles.');
+define('MODULE_PAYMENT_PAYPALR_UNSUPPORTED_SHIPPING_COUNTRY', 'Le pays de votre adresse de livraison n\'est pas pris en charge par PayPal ; ce mode de paiement ne peut pas être utilisé.');
 
 // -----
 // Storefront-Text, der zum Erstellen einer für den Kunden sichtbaren „after_process“-Notiz in der
 // Bestellstatus-Historie verwendet wird.
-define('MODULE_PAYMENT_PAYPALR_TRANSACTION_ID','Transaktions-ID: '); //- Sollte mit einem Leerzeichen enden
-define('MODULE_PAYMENT_PAYPALR_TRANSACTION_TYPE','Zahlungsart: PayPal Checkout (%s)'); //- %s wird entweder mit 'paypal' oder 'card' ausgefüllt
-define('MODULE_PAYMENT_PAYPALR_TRANSACTION_PAYMENT_STATUS','Zahlungsstatus: '); //- Sollte mit einem Leerzeichen enden
-define('MODULE_PAYMENT_PAYPALR_TRANSACTION_AMOUNT','Betrag: '); //- Sollte mit einem Leerzeichen enden
+define('MODULE_PAYMENT_PAYPALR_TRANSACTION_ID','ID de transaction: '); //- Sollte mit einem Leerzeichen enden
+define('MODULE_PAYMENT_PAYPALR_TRANSACTION_TYPE','Mode de paiement : PayPal Checkout (%s)'); //- %s wird entweder mit 'paypal' oder 'card' ausgefüllt
+define('MODULE_PAYMENT_PAYPALR_TRANSACTION_PAYMENT_STATUS','Statut de paiement: '); //- Sollte mit einem Leerzeichen enden
+define('MODULE_PAYMENT_PAYPALR_TRANSACTION_AMOUNT','Montant: '); //- Sollte mit einem Leerzeichen enden
 
 // Wird von der javascript_validation-Methode des Zahlungsmoduls verwendet.
 //
-define('MODULE_PAYMENT_PAYPALR_TEXT_JS_CC_OWNER', '* Der Name des Karteninhabers muss mindestens ' . CC_OWNER_MIN_LENGTH . ' Zeichen lang sein.\n');
-define('MODULE_PAYMENT_PAYPALR_TEXT_JS_CC_NUMBER', '* Die Kreditkartennummer muss mindestens ' . CC_NUMBER_MIN_LENGTH . ' Zeichen lang sein.\n');
-define('MODULE_PAYMENT_PAYPALR_TEXT_JS_CC_CVV', '* Die 3- oder 4-stellige CVV-Nummer muss auf der Rückseite der Kreditkarte (oder auf der Vorderseite bei American Express) eingegeben werden.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_JS_CC_OWNER', '* Le nom du titulaire de la carte doit comporter au moins  ' . CC_OWNER_MIN_LENGTH . ' caractères.\n');
+define('MODULE_PAYMENT_PAYPALR_TEXT_JS_CC_NUMBER', '* Le numéro de carte de crédit doit comporter au moins ' . CC_NUMBER_MIN_LENGTH . ' caractères.\n');
+define('MODULE_PAYMENT_PAYPALR_TEXT_JS_CC_CVV', '* Le numéro CVV à 3 ou 4 chiffres doit être saisi au dos de la carte de crédit (ou au recto pour les cartes American Express).');
 
 // -----
 // Bei der Verarbeitung von Kreditkarten verwendete Konstanten
 //
-define('MODULE_PAYMENT_PAYPALR_CC_OWNER', 'Name des Karteninhabers:');
-define('MODULE_PAYMENT_PAYPALR_CC_TYPE', 'Kreditkartentyp:');
-define('MODULE_PAYMENT_PAYPALR_CC_NUMBER', 'Kreditkartennummer:');
-define('MODULE_PAYMENT_PAYPALR_CC_EXPIRES', 'Ablaufdatum der Kreditkarte:');
-define('MODULE_PAYMENT_PAYPALR_CC_CVV', 'CVV-Nummer:');
+define('MODULE_PAYMENT_PAYPALR_CC_OWNER', 'Nom du titulaire de la carte:');
+define('MODULE_PAYMENT_PAYPALR_CC_TYPE', 'Type de carte de crédit:');
+define('MODULE_PAYMENT_PAYPALR_CC_NUMBER', 'Numéro de carte de crédit:');
+define('MODULE_PAYMENT_PAYPALR_CC_EXPIRES', 'Date d\'expiration:');
+define('MODULE_PAYMENT_PAYPALR_CC_CVV', 'Numéro CVV:');
 
-define('MODULE_PAYMENT_PAYPALR_TEXT_CVV_LENGTH', 'Die <em>CVV-Nummer</em> für Ihre %1$s-Karte, die auf <var>%2$s</var> endet, muss %3$u Stellen lang sein.'); //- %1$s ist der Kartentyp, %2$s ist das letzte r, %3$u ist die CVV-Länge
-define('MODULE_PAYMENT_PAYPALR_TEXT_BAD_CARD', 'Wir entschuldigen uns für die Unannehmlichkeiten, aber der von Ihnen eingegebene Kreditkartentyp wird von uns nicht akzeptiert. Bitte verwenden Sie eine andere Kreditkarte.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_CVV_LENGTH', 'Le <em>numéro CVV</em> de votre carte %1$s, qui se termine par <var>%2$s</var>, doit comporter %3$u chiffres.'); //- %1$s ist der Kartentyp, %2$s ist das letzte r, %3$u ist die CVV-Länge
+define('MODULE_PAYMENT_PAYPALR_TEXT_BAD_CARD', 'Nous sommes désolés pour ce désagrément, mais le type de carte de crédit que vous avez saisi n\'est pas accepté. Veuillez utiliser une autre carte de crédit.');
 
-define('MODULE_PAYMENT_PAYPALR_TEXT_CC_ERROR', 'Beim Versuch, Ihre Kreditkarte zu verarbeiten, ist ein Fehler aufgetreten.');
-define('MODULE_PAYMENT_PAYPALR_TEXT_CARD_DECLINED', 'Die Karte, die mit <var>%s</var> endet, wurde abgelehnt.'); //- %s ist die letzten 4 Stellen der Kartennummer.
-define('MODULE_PAYMENT_PAYPALR_TEXT_DECLINED_REASON_UNKNOWN', 'Wenn Sie diese Meldung weiterhin erhalten, kontaktieren Sie uns bitte und geben Sie den Grund-Code %s an.'); //- %s ist ['processor_response']['response_code']
+define('MODULE_PAYMENT_PAYPALR_TEXT_CC_ERROR', 'Une erreur s\'est produite lors du traitement de votre carte de crédit.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_CARD_DECLINED', 'La carte qui se termine par <var>%s</var> a été refusée.'); //- %s ist die letzten 4 Stellen der Kartennummer.
+define('MODULE_PAYMENT_PAYPALR_TEXT_DECLINED_REASON_UNKNOWN', 'Si ce message continue à s\'afficher, veuillez nous contacter et indiquer le code de raison %s.'); //- %s ist ['processor_response']['response_code']
 
-define('MODULE_PAYMENT_PAYPALR_TEXT_TRY_AGAIN', 'Bitte versuchen Sie es erneut, wählen Sie eine alternative Zahlungsmethode aus oder kontaktieren Sie uns, wenn Sie Hilfe benötigen.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_TRY_AGAIN', 'Veuillez réessayer, sélectionner un autre mode de paiement ou nous contacter si vous avez besoin d\'aide.');
 
-define('MODULE_PAYMENT_PAYPALR_CARD_PROCESSING', 'Durch die Zahlung mit Ihrer Karte bestätigen Sie, dass Ihre Daten von PayPal gemäß der unter PayPal.com verfügbaren %s verarbeitet werden.'); //- %s wird mit einem Link ausgefüllt
-define('MODULE_PAYMENT_PAYPALR_PAYPAL_PRIVACY_STMT', 'PayPal-Datenschutzerklärung');
-define('MODULE_PAYMENT_PAYPALR_PAYPAL_PRIVACY_LINK', 'https://www.paypal.com/de/legalhub/paypal/privacy-full');
+define('MODULE_PAYMENT_PAYPALR_CARD_PROCESSING', 'En effectuant le paiement avec votre carte, vous confirmez que vos données seront traitées par PayPal conformément à %s disponible sur PayPal.com.'); //- %s wird mit einem Link ausgefüllt
+define('MODULE_PAYMENT_PAYPALR_PAYPAL_PRIVACY_STMT', 'Politique de confidentialité PayPal');
+define('MODULE_PAYMENT_PAYPALR_PAYPAL_PRIVACY_LINK', 'https://www.paypal.com/fr/legalhub/paypal/privacy-full');
 
 // -----
 // Warnmeldungen für Geschäftsinhaber/Administrator
@@ -81,7 +81,7 @@ define('MODULE_PAYMENT_PAYPALR_ALERT_SUBJECT_TOTAL_MISMATCH', 'Berechnungsfehler
 define('MODULE_PAYMENT_PAYPALR_ALERT_SUBJECT_CONFIRMATION_ERROR', 'Zahlungsauswahl bestätigen');
 
 define('MODULE_PAYMENT_PAYPALR_ALERT_ORDER_CREATION', 'Der Status für die Bestellung Nr. %1$u wurde aufgrund eines PayPal-Antwortstatus von %2$s auf Ausstehend gesetzt.');
-define('MODULE_PAYMENT_PAYPALR_ALERT_MISSING_OBSERVER', 'Der Oobserver des Zahlungsmoduls (auto.paypalrestful.php) wurde nicht geladen; das Zahlungsmodul wurde deaktiviert.');
+define('MODULE_PAYMENT_PAYPALR_ALERT_MISSING_OBSERVER', 'Der Beobachter des Zahlungsmoduls (auto.paypalrestful.php) wurde nicht geladen; das Zahlungsmodul wurde deaktiviert.');
 define('MODULE_PAYMENT_PAYPALR_ALERT_MISSING_NOTIFICATIONS', 'Die erforderlichen Benachrichtigungen in der Klasse order_total.php wurden nicht angewendet; das Zahlungsmodul kann keine Bestellungen aufgeben.');
 define('MODULE_PAYMENT_PAYPALR_ALERT_ORDER_CREATE', 'Beim Versuch, eine Bestellung zu initiieren, wurde von PayPal ein Fehler zurückgegeben. Aus Kulanzgründen wurde Ihrem Kunden nur der Fehlercode angezeigt. Die Details des Fehlers sind unten aufgeführt:' . '\n\n');
 define('MODULE_PAYMENT_PAYPALR_ALERT_TOTAL_MISMATCH', 'Es wurde eine Diskrepanz zwischen dem Gesamtwert einer Bestellung und ihrer Aufschlüsselung festgestellt. Die Bestellung wird ohne Artikel und Kostenaufschlüsselung an PayPal übermittelt:');
@@ -116,20 +116,20 @@ define('MODULE_PAYMENT_PAYPALR_CARD_FRAUDULENT', 'betrügerisch');
 // -----
 // Für diese Nachrichten ist %1$s der Kartentyp und %2$s die letzten 4 Stellen der Kartennummer.
 //
-define('MODULE_PAYMENT_PAYPALR_TEXT_CC_EXPIRED', 'Die %1$s-Karte, die mit <var>%2$s</var> endet, ist abgelaufen.');
-define('MODULE_PAYMENT_PAYPALR_TEXT_INSUFFICIENT_FUNDS', 'Die %1$s-Karte, die mit <var>%2$s</var> endet, verfügt über unzureichende Mittel.');
-define('MODULE_PAYMENT_PAYPALR_TEXT_CVV_FAILED', 'Die von Ihnen eingegebene CVV-Nummer für die %1$s-Karte mit der Endung <var>%2$s</var> ist nicht korrekt.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_CC_EXPIRED', 'La carte %1$s qui se termine par <var>%2$s</var> a expiré.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_INSUFFICIENT_FUNDS', 'La carte %1$s qui se termine par <var>%2$s</var> dispose de ressources insuffisantes.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_CVV_FAILED', 'Le numéro CVV que vous avez saisi pour la carte %1$s se terminant par <var>%2$s</var> est incorrect.');
 
 // -----
 // $1$s ... MODULE_PAYMENT_PAYPALR_TEXT_TITLE
 // $2%s ... Der von PayPal zurückgegebene Fehlercode.
 //
-define('MODULE_PAYMENT_PAYPALR_TEXT_CREATE_ORDER_ISSUE', 'Wir können Ihre %1$s-Zahlung derzeit nicht verarbeiten. Bitte kontaktieren Sie uns, um Unterstützung zu erhalten, und geben Sie uns diesen Code: <b>%2$s</b>.');
+define('MODULE_PAYMENT_PAYPALR_TEXT_CREATE_ORDER_ISSUE', 'Nous ne pouvons actuellement pas traiter votre paiement %1$. Veuillez nous contacter pour obtenir de l\'aide et nous communiquer ce code : <b>%2$s</b>.');
 
 // -----
 // Schaltflächen auf der Seite „checkout_payment“; weitere Informationen finden Sie unter https://www.paypal.com/bm/webapps/mpp/logo-center.
 //
-define('MODULE_PAYMENT_PAYPALR_BUTTON_ALTTEXT', 'Klicken Sie hier, um mit Ihrer PayPal-Geldbörse zu bezahlen');
+define('MODULE_PAYMENT_PAYPALR_BUTTON_ALTTEXT', 'Cliquez ici pour payer avec votre portefeuille PayPal.');
 define('MODULE_PAYMENT_PAYPALR_BUTTON_COLOR', 'YELLOW'); //- One of WHITE, YELLOW, GREY or BLUE; defaults to YELLOW.
 define('MODULE_PAYMENT_PAYPALR_BUTTON_IMG_YELLOW', 'https://www.paypalobjects.com/digitalassets/c/website/marketing/apac/C2/logos-buttons/optimize/44_Yellow_PayPal_Pill_Button.png');
 define('MODULE_PAYMENT_PAYPALR_BUTTON_IMG_GREY', 'https://www.paypalobjects.com/digitalassets/c/website/marketing/apac/C2/logos-buttons/optimize/44_Grey_PayPal_Pill_Button.png');
@@ -137,7 +137,7 @@ define('MODULE_PAYMENT_PAYPALR_BUTTON_IMG_BLUE', 'https://www.paypalobjects.com/
 define('MODULE_PAYMENT_PAYPALR_BUTTON_IMG_WHITE', 'https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-150px.png');
 
 define('MODULE_PAYMENT_PAYPALR_CHOOSE_PAYPAL', 'PayPal Wallet:');
-define('MODULE_PAYMENT_PALPALR_CHOOSE_CARD', 'Kreditkarte:');
+define('MODULE_PAYMENT_PALPALR_CHOOSE_CARD', 'Carte de crédit:');
 define('MODULE_PAYMENT_PAYPALR_LOGO_SVG', '"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAxcHgiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAxMDEgMzIiIHByZXNlcnZlQXNw ZWN0UmF0aW89InhNaW5ZTWluIG1lZXQiIHhtbG5zPSJodHRwOiYjeDJGOyYjeDJGO3d3dy53My5vcmcmI3gyRjsyMDAwJiN4MkY7c3ZnIj48cGF0aCBmaWxsPSIjMDAzMDg3IiB kPSJNIDEyLjIzNyAyLjggTCA0LjQzNyAyLjggQyAzLjkzNyAyLjggMy40MzcgMy4yIDMuMzM3IDMuNyBMIDAuMjM3IDIzLjcgQyAwLjEzNyAyNC4xIDAuNDM3IDI0LjQgMC44MzcgMjQu NCBMIDQuNTM3IDI0LjQgQyA1LjAzNyAyNC40IDUuNTM3IDI0IDUuNjM3IDIzLjUgTCA2LjQzNyAxOC4xIEMgNi41MzcgMTcuNiA2LjkzNyAxNy4yIDcuNTM3IDE3LjIgTCAxMC4wMz cgMTcuMiBDIDE1LjEzNyAxNy4yIDE4LjEzNyAxNC43IDE4LjkzNyA5LjggQyAxOS4yMzcgNy43IDE4LjkzNyA2IDE3LjkzNyA0LjggQyAxNi44MzcgMy41IDE0LjgzNyAyLjggMTIuMjM3IDI uOCBaIE0gMTMuMTM3IDEwLjEgQyAxMi43MzcgMTIuOSAxMC41MzcgMTIuOSA4LjUzNyAxMi45IEwgNy4zMzcgMTIuOSBMIDguMTM3IDcuNyBDIDguMTM3IDcuNCA4LjQzNyA3LjIgOC43Mz cgNy4yIEwgOS4yMzcgNy4yIEMgMTAuNjM3IDcuMiAxMS45MzcgNy4yIDEyLjYzNyA4IEMgMTMuMTM3IDguNCAxMy4zMzcgOS4xIDEzLjEzNyAxMC4xIFoiPjwvcGF0aD48cGF0aCBmaW xsPSIjMDAzMDg3IiBkPSJNIDM1LjQzNyAxMCBMIDMxLjczNyAxMCBDIDMxLjQzNyAxMCAzMS4xMzcgMTAuMiAzMS4xMzcgMTAuNSBMIDMwLjkzNyAxMS41IEwgMzAuNjM3IDExLjEgQyAy OS44MzcgOS45IDI4LjAzNyA5LjUgMjYuMjM3IDkuNSBDIDIyLjEzNyA5LjUgMTguNjM3IDEyLjYgMTcuOTM3IDE3IEMgMTcuNTM3IDE5LjIgMTguMDM3IDIxLjMgMTkuMzM3IDIyLjcgQy AyMC40MzcgMjQgMjIuMTM3IDI0LjYgMjQuMDM3IDI0LjYgQyAyNy4zMzcgMjQuNiAyOS4yMzcgMjIuNSAyOS4yMzcgMjIuNSBMIDI5LjAzNyAyMy41IEMgMjguOTM3IDIzLj kgMjkuMjM3IDI0LjMgMjkuNjM3IDI0LjMgTCAzMy4wMzcgMjQuMyBDIDMzLjUzNyAyNC4zIDM0LjAzNyAyMy45IDM0LjEzNyAyMy40IEwgMzYuMTM3IDEwLjYgQyAzNi4yMzcgM TAuNCAzNS44MzcgMTAgMzUuNDM3IDEwIFogTSAzMC4zMzcgMTcuMiBDIDI5LjkzNyAxOS4zIDI4LjMzNyAyMC44IDI2LjEzNyAyMC44IEMgMjUuMDM3IDIwLjggMjQuMjM3IDIwLjUgMj MuNjM3IDE5LjggQyAyMy4wMzcgMTkuMSAyMi44MzcgMTguMiAyMy4wMzcgMTcuMiBDIDIzLjMzNyAxNS4xIDI1LjEzNyAxMy42IDI3LjIzNyAxMy42IEMgMjguMzM3IDEzLjYgMjkuMTM3IDE 0IDI5LjczNyAxNC42IEMgMzAuMjM3IDE1LjMgMzAuNDM3IDE2LjIgMzAuMzM3IDE3LjIgWiI+PC9wYXRoPjxwYXRoIGZpbGw9IiMwMDMwODciIGQ9Ik0gNTUuMzM3IDEwIEwgN TEuNjM3IDEwIEMgNTEuMjM3IDEwIDUwLjkzNyAxMC4yIDUwLjczNyAxMC41IEwgNDUuNTM3IDE4LjEgTCA0My4zMzcgMTAuOCBDIDQzLjIzNyAxMC4zIDQyLjczNyAxMCA0Mi4zMzcgM TAgTCAzOC42MzcgMTAgQyAzOC4yMzcgMTAgMzcuODM3IDEwLjQgMzguMDM3IDEwLjkgTCA0Mi4xMzcgMjMgTCAzOC4yMzcgMjguNCBDIDM3LjkzNyAyOC44IDM4LjIzNyAyOS40 IDM4LjczNyAyOS40IEwgNDIuNDM3IDI5LjQgQyA0Mi44MzcgMjkuNCA0My4xMzcgMjkuMiA0My4zMzcgMjguOSBMIDU1LjgzNyAxMC45IEMgNTYuMTM3IDEwLjYgNTUuODM3IDE wIDU1LjMzNyAxMCBaIj48L3BhdGg+PHBhdGggZmlsbD0iIzAwOWNkZSIgZD0iTSA2Ny43MzcgMi44IEwgNTkuOTM3IDIuOCBDIDU5LjQzNyAyLjggNTguOTM3IDMuMiA1OC44MzcgMy43 IEwgNTUuNzM3IDIzLjYgQyA1NS42MzcgMjQgNTUuOTM3IDI0LjMgNTYuMzM3IDI0LjMgTCA2MC4zMzcgMjQuMyBDIDYwLjczNyAyNC4zIDYxLjAzNyAyNCA2MS4wMzcgMjMu NyBMIDYxLjkzNyAxOCBDIDYyLjAzNyAxNy41IDYyLjQzNyAxNy4xIDYzLjAzNyAxNy4xIEwgNjUuNTM3IDE3LjEgQyA3MC42MzcgMTcuMSA3My42MzcgMTQuNiA3NC40MzcgOS43IEMg NzQuNzM3IDcuNiA3NC40MzcgNS45IDczLjQzNyA0LjcgQyA3Mi4yMzcgMy41IDcwLjMzNyAyLjggNjcuNzM3IDIuOCBaIE0gNjguNjM3IDEwLjEgQyA2OC4yMzcgMTIu OSA2Ni4wMzcgMTIuOSA2NC4wMzcgMTIuOSBMIDYyLjgzNyAxMi45IEwgNjMuNjM3IDcuNyBDIDYzLjYzNyA3LjQgNjMuOTM3IDcuMiA2NC4yMzcgNy4yIEwgNjQuNzM3IDcuMiBDIDY 2LjEzNyA3LjIgNjcuNDM3IDcuMiA2OC4xMzcgOCBDIDY4LjYzNyA4LjQgNjguNzM3IDkuMSA2OC42MzcgMTAuMSBaIj48L3BhdGg+PHBhdGggZmlsbD0iIzAwOWNkZSIgZD0i TSA5MC45MzcgMTAgTCA4Ny4yMzcgMTAgQyA4Ni45MzcgMTAgODYuNjM3IDEwLjIgODYuNjM3IDEwLjUgTCA4Ni40MzcgMTEuNSBMIDg2LjEzNyAxMS4xIEMgODUuMzM3IDkuOSA4 My41MzcgOS41IDgxLjczNyA5LjUgQyA3Ny42MzcgOS41IDc0LjEzNyAxMi42IDczLjQzNyAxNyBDIDczLjAzNyAxOS4yIDczLjUzNyAyMS4zIDc0LjgzNyAyMi43IEMgNzUuOTM3 IDI0IDc3LjYzNyAyNC42IDc5LjUzNyAyNC42IEMgODIuODM3IDI0LjYgODQuNzM3IDIyLjUgODQuNzM3IDIyLjUgTCA4NC41MzcgMjMuNSBDIDg0LjQzNyAyMy45IDg0LjczNyAy NC4zIDg1LjEzNyAyNC4zIEwgODguNTM3IDI0LjMgQyA4OS4wMzcgMjQuMyA4OS41MzcgMjMuOSA4OS42MzcgMjMuNCBMIDkxLjYzNyAxMC42IEMgOTEuNjM3IDEwLjQgOTEuMzM3IDE wIDkwLjkzNyAxMCBaIE0gODUuNzM3IDE3LjIgQyA4NS4zMzcgMTkuMyA4My43MzcgMjAuOCA4MS41MzcgMjAuOCBDIDgwLjQzNyAyMC44IDc5LjYzNyAyMC41IDc5LjAzNyAxOS44I EMgNzguNDM3IDE5LjEgNzguMjM3IDE4LjIgNzguNDM3IDE3LjIgQyA3OC43MzcgMTUuMSA4MC41MzcgMTMuNiA4Mi42MzcgMTMuNiBDIDgzLjczNyAxMy42IDg0LjUzNyAxNCA4NS4x MzcgMTQuNiBDIDg1LjczNyAxNS4zIDg1LjkzNyAxNi4yIDg1LjczNyAxNy4yIFoiPjwvcGF0aD48cGF0aCBmaWxsPSIjMDA5Y2RlIiBkPSJNIDk1LjMzNyAzLjMgTCA5Mi4xMzcgMj MuNiBDIDkyLjAzNyAyNCA5Mi4zMzcgMjQuMyA5Mi43MzcgMjQuMyBMIDk1LjkzNyAyNC4zIEMgOTYuNDM3IDI0LjMgOTYuOTM3IDIzLjkgOTcuMDM3IDIzLjQgTCAxMDAuMjM3IDMuNSBDIDEw MC4zMzcgMy4xIDEwMC4wMzcgMi44IDk5LjYzNyAyLjggTCA5Ni4wMzcgMi44IEMgOTUuNjM3IDIuOCA5NS40MzcgMyA5NS4zMzcgMy4zIFoiPjwvcGF0aD48L3N2Zz4"');
 
 // -----

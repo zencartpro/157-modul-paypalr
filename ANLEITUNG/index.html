@@ -62,7 +62,7 @@ $(document).ready(function(){
         <div class="content-infos">
             <div class="info"><b>Version:</b> 1.1.1</div>
             <div class="info"><b>Autor:</b> <a href="https://www.webchills.at" target="_blank">webchills</a></div>
-            <div class="info"><b>last Update:</b> 25. Juni 2025</div>
+            <div class="info"><b>last Update:</b> 24. Juni 2025</div>
         </div>
         <ul>
             <li class="scroll-to-link active" data-target="content-zweck">
@@ -110,7 +110,7 @@ $(document).ready(function(){
             <h1>Sinn und Zweck</h1>
             <p >Mit diesem Modul wird Zahlung via PayPal Checkout über die neue PayPal REST API im Shop integriert.<br>
     Optional kann auch Kreditkartenzahlung via PayPal aktiviert werden, dazu ist für den Kunden kein PayPal Konto erforderlich<br>
-    Dieses Modul löst das bisherige PayPal Express Modul (paypalwpp) der deutschen Zen Cart Version ab, da PayPal die alte von diesem Modul verwendete NVP/SOAP API abschalten wird.<br>
+    Dieses Modul löst das bisherige PayPal Express Modul (paypalwpp) der deutschen Zen Cart Version ab, da PayPal die alte vom paypalwpp Modul verwendete NVP/SOAP API abschalten wird.<br>    
     Ein "Login mit PayPal" über einen PayPal Express Button im Warenkorb wird von diesem Modul nicht unterstützt, PayPal wird ganz normal wie andere Zahlungsarten auch bei der Auswahl der Zahlungsarten im Checkout angeboten.<br>
     Für die Bestellung wird als Lieferadresse die vom Kunden im Shop angegebene Lieferadresse übergeben, es gibt daher keine Notwendigkeit mehr, den Kunden nach der Rückleitung von PayPal erneut nach seiner Lieferadresse zu fragen wie das bisher vom paypalwpp Modul der deutschen Zen Cart Version gehandhabt wurde.<br>
     Dieses Modul unterstützt rein PayPal Wallet und Kreditkarte via PayPal.<br>
@@ -298,7 +298,39 @@ Zeile 133:<br>
 <div class="overflow-hidden content-section" id="content-verwendung">
             <h1>Verwendung</h1>
             <p><b>BESTELLABLAUF IM FRONTEND</b></p>
-<p>tbd</p>
+<p>PayPal wird im Checkout bei der Auswahl der Zahlungsarten mit einem Paypal Logo angeboten:</p>
+<p><img src="images/paypal2.jpg">
+<p>Wird im Modul zusätzlich Kreditkarte aktiviert, erscheint bei der Zahlungsart PayPal eine Auswahlmöglichkeit zwischen PayPal Walllet und Kreditkarte:</p>
+<p><img src="images/paypal3.jpg"></p>
+<p>Es werden die Kreditkartenlogos angezeigt, die Sie unter Konfiguration > Kreditkarten aktiviert haben.<br>
+Die Logos befinden sich in folgendem Ordner:<br>
+<code>/includes/modules/payment/paypal/PayPalRestful/images</code>
+</p>
+<p>Für das Styling wird folgendes Stylesheet verwendet:<br>
+<code>/includes/modules/payment/paypal/PayPalRestful/paypalr.css</code>
+<br>
+Wenn Sie auf eigene Gefahr in dieser Datei Anpassungen vornehmen, dann kopieren Sie sich dieses Stylesheet in Ihr Templateverzeichnis unter<br>
+<code>includes/templates/DEINTEMPLATE/css</code>
+<br>und nehmen in dieser Datei Ihre Anpassungen vor.<br>Das Modul prüft, ob eine solche Override Datei vorhanden ist. Falls nicht wird das Original Stylesheet verwendet.
+</p>
+<p>Folgende Definitionen werden Sie wahrscheinlich für Ihr Layout anpassen wollen, sie steuern wie die inaktive und aktive Option Wallet oder Kreditkarte farblich dargestellt wird:</p>
+<p><code>.ppr-button-choice input[type="radio"]+label {
+    border: 2px solid #d3d3d3;
+}</code></p>
+<p><code>.ppr-button-choice input[type="radio"]:checked+label {
+    border: 2px solid #696969;
+}</code></p>
+<p>Anclicken der Kreditkartenlogos schaltet dann auf Zahlungsart Kreditkarte um und blendet die Kreditkartenfelder ein.<br>Im Sandbox Modus können Sie Testkreditkartendaten von Paypal verwenden:<br>
+<a href="https://developer.paypal.com/tools/sandbox/card-testing/" target="_blank">developer.paypal.com/tools/sandbox/card-testing</a><br>
+Und mit SCA Always auch eine 2 Faktor Authentifizierung Simulation aktivieren (diese Option erscheint nur im Sandbox Modus):
+</p>
+<p><img src="images/paypal4.jpg"></p>
+<p>Danach verhält sich das paypalr Modul genauso wie jedes andere Zahlungsmodul, der Kunde kommt auf die checkout_confirmation Seite und erst wenn dort die Bestellung mit Click auf Kaufen abgeschlossen wird, erfolgen Bestellung und Abbuchung via PayPal.</p>
+<p>Alle Transaktionen des paypalr Moduls sind unter Kunden > PayPal Transaktionen ersichtlich</p>
+<p>Rückerstattungen nehmen Sie wie bisher von paypalwpp gewohnt auch mit dem neuen Modul via Shopadministration vor.</p>
+<p>Um alte noch mit payaplwpp abgewicklete PayPal Bestellungen rückzuerstatten, gehen Sie so vor wie früher. Da das paypalwpp Modul nun den Status Retired hat, sind Rückerstattungen via Shopadministratio</p>
+<p>Weitere Infos zu diesem Modul auf englisch finden Sie auch in der WIKI des englischen Originalmoduls von lat9 hier:<br>
+<a href="https://github.com/lat9/paypalr/wiki" target="_blank">github.com/lat9/paypalr/wiki</a></p>
         </div>
         
 <div class="overflow-hidden content-section" id="content-download">
@@ -306,7 +338,7 @@ Zeile 133:<br>
           
 <p>Dieses Modul steht kostenlos auf Github zum Download bereit.</p>
 <p>Aktuelle Version: 1.1.1 vom 24.06.2025:</p>
-<p><a class="downloadbutton" title="Download PayPal REST API 1.1.0 für Zen Cart 1.5.7j deutsch" href="#">Download (.zip)</a></p>
+<p><a class="downloadbutton" title="Download PayPal REST API 1.1.1 für Zen Cart 1.5.7j deutsch" href="https://github.com/zencartpro/157-modul-paypalr/archive/refs/tags/v1.1.1.zip">Download (.zip)</a></p>
 <p>Der Downloadbutton liefert immer direkt von Github das .zip Archiv der neuesten Version.<br>
 Ältere Versionen sind auf Github unter Releases archiviert:<br>
   <a href="https://github.com/zencartpro/157-modul-paypalr/releases" target="_blank">https://github.com/zencartpro/157-modul-paypalr/releases</a><br><br>
@@ -315,7 +347,7 @@ Zeile 133:<br>
         <div class="overflow-hidden content-section" id="content-changelog">
             <h1>Changelog</h1>
            
-  <p>Version 1.1.1 - 2025-06-25</p>
+  <p>Version 1.1.1 - 2025-06-24</p>
 <ul><li>Initial Release</li><ul>
         
 

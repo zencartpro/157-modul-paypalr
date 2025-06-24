@@ -299,7 +299,11 @@ Zeile 133:<br>
             <h1>Verwendung</h1>
             <p><b>BESTELLABLAUF IM FRONTEND</b></p>
 <p>PayPal wird im Checkout bei der Auswahl der Zahlungsarten mit einem Paypal Logo angeboten:</p>
-<p><img src="images/paypal2.jpg">
+<p><img src="images/paypal2.jpg"></p>
+<p>Wird PayPal Wallet gewählt kommt der Kunde im nächsten Schritt zu PayPal, loggt sich ein und bestätigt die Zahlung:</p>
+<p><img src="images/paypal5.jpg"></p>
+<p><img src="images/paypal6.jpg"></p>
+<p>Danach verhält sich das paypalr Modul genauso wie jedes andere Zahlungsmodul, der Kunde kommt auf die checkout_confirmation Seite und erst wenn dort die Bestellung mit Click auf Kaufen abgeschlossen wird, erfolgen Bestellung und Abbuchung via PayPal.</p>
 <p>Wird im Modul zusätzlich Kreditkarte aktiviert, erscheint bei der Zahlungsart PayPal eine Auswahlmöglichkeit zwischen PayPal Walllet und Kreditkarte:</p>
 <p><img src="images/paypal3.jpg"></p>
 <p>Es werden die Kreditkartenlogos angezeigt, die Sie unter Konfiguration > Kreditkarten aktiviert haben.<br>
@@ -325,10 +329,11 @@ Wenn Sie auf eigene Gefahr in dieser Datei Anpassungen vornehmen, dann kopieren 
 Und mit SCA Always auch eine 2 Faktor Authentifizierung Simulation aktivieren (diese Option erscheint nur im Sandbox Modus):
 </p>
 <p><img src="images/paypal4.jpg"></p>
-<p>Danach verhält sich das paypalr Modul genauso wie jedes andere Zahlungsmodul, der Kunde kommt auf die checkout_confirmation Seite und erst wenn dort die Bestellung mit Click auf Kaufen abgeschlossen wird, erfolgen Bestellung und Abbuchung via PayPal.</p>
-<p>Alle Transaktionen des paypalr Moduls sind unter Kunden > PayPal Transaktionen ersichtlich</p>
+<p>Um das testen zu können muss Ihr Sandbox Account bei PayPal die entsprechenden Berechtigungen haben.</p>
+<p>Auch bei Kreditkartenzahlung via PayPal verhält sich das paypalr Modul genauso wie jedes andere Zahlungsmodul, der Kunde kommt auf die checkout_confirmation Seite und erst wenn dort die Bestellung mit Click auf Kaufen abgeschlossen wird, erfolgen Bestellung und Abbuchung via PayPal.</p>
+<p>Alle Transaktionen des paypalr Moduls sind später unter Kunden > PayPal Transaktionen ersichtlich</p>
 <p>Rückerstattungen nehmen Sie wie bisher von paypalwpp gewohnt auch mit dem neuen Modul via Shopadministration vor.</p>
-<p>Um alte noch mit payaplwpp abgewicklete PayPal Bestellungen rückzuerstatten, gehen Sie so vor wie früher. Da das paypalwpp Modul nun den Status Retired hat, sind Rückerstattungen via Shopadministratio</p>
+<p>Um alte noch mit payaplwpp abgewicklete PayPal Bestellungen rückzuerstatten, gehen Sie so vor wie früher. Da das paypalwpp Modul nun den Status Retired hat, sind Rückerstattungen via Shopadministration weiterhin möglich.</p>
 <p>Weitere Infos zu diesem Modul auf englisch finden Sie auch in der WIKI des englischen Originalmoduls von lat9 hier:<br>
 <a href="https://github.com/lat9/paypalr/wiki" target="_blank">github.com/lat9/paypalr/wiki</a></p>
         </div>

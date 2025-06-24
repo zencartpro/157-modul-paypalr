@@ -300,19 +300,8 @@ define('MODULE_PAYMENT_PAYPALR_VOID_MEMO', 'Transaktion von %1$s storniert.');
 define('MODULE_PAYMENT_PAYPALR_VOID_INVALID_TXN_ID', 'Die von Ihnen eingegebene Transaktions-ID (%1$s) wurde nicht gefunden. Bitte versuchen Sie es erneut.');
 define('MODULE_PAYMENT_PAYPALR_VOID_COMPLETE', 'Die Zahlungsautorisierung für die Bestellung Nr. %u wurde storniert.');
 
-
 if (IS_ADMIN_FLAG === true) {
 define('MODULE_PAYMENT_PAYPALR_TEXT_ADMIN_DESCRIPTION','<b>PayPal Checkout (RESTful)</b>, v%s<br><br>
-Dieses Modul verwendet die neue PayPal RESTful API');
+Dieses Modul verwendet die neue PayPal RESTful API und ermöglicht Zahlung via PayPal Wallet oder Kreditkarte via PayPal.<br>Eine detaillierte Installations- und Konfigurationsanleitung finden Sie auf:<br><a href="https://paypalcheckout.zen-cart-pro.at" target="_blank">paypalcheckout.zen-cart-pro.at</a>');
 }
 
-if (IS_ADMIN_FLAG === true) {
-define('MODULE_PAYMENT_PAYPALR_TEXT_ADMIN_DESCRIPTION','<b>PayPal Checkout (RESTful)</b>, v%s<br>Dieses Modul verwendet die neue PayPal RESTful API.<br><br>
-<a href="https://www.paypal.com" rel="noopener noreferrer" target="_blank">Verwalten Sie Ihren PayPal <b>Business</b> account</a><br><br>
-<b>Konfigurationsanleitung (englisch):</b><br>
-<ol>
-<li><a href="https://github.com/lat9/paypalr/wiki/Creating-PayPal-Credentials" rel="noopener noreferrer" target="_blank">Create your PayPal credentials.</a></li>
-<li><a href="https://github.com/lat9/paypalr/wiki/Configuring-the-Payment-Module" rel="noopener noreferrer" target="_blank">Configure the module\'s additional settings.</a></li>
-</ol>
-<p>Refer to the payment module\'s GitHub Wiki <a href="https://github.com/lat9/paypalr/wiki" rel="noopener noreferrer" target="_blank">articles</a> for additional information.</p>');
-}

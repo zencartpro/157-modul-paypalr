@@ -5,7 +5,7 @@
 * Zen Cart German Version - www.zen-cart-pro.at
 * @copyright Portions Copyright 2003 osCommerce
 * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
-* @version $Id: paypalr.php 2025-04-30 11:31:24Z webchills $
+* @version $Id: paypalr.php 2025-06-24 11:31:24Z webchills $
 */
 
 define('MODULE_PAYMENT_PAYPALR_TEXT_TITLE', 'PayPal Checkout');
@@ -301,16 +301,7 @@ define('MODULE_PAYMENT_PAYPALR_VOID_MEMO', 'Transaction voided by %1$s.');
 define('MODULE_PAYMENT_PAYPALR_VOID_INVALID_TXN_ID', 'The transaction ID you entered (%1$s) was not found; please try again.');
 define('MODULE_PAYMENT_PAYPALR_VOID_COMPLETE', 'The payment authorization for order#%u has been voided.');
 
-
 if (IS_ADMIN_FLAG === true) {
 define('MODULE_PAYMENT_PAYPALR_TEXT_ADMIN_DESCRIPTION','<b>PayPal Checkout (RESTful)</b>, v%s<br><br>
-<a href="https://www.paypal.com" rel="noopener noreferrer" target="_blank">Manage your PayPal <b>business</b> account</a><br><br>
-<b>Configuration instructions:</b><br>
-<ol>
-<li><a href="https://github.com/lat9/paypalr/wiki/Creating-PayPal-Credentials" rel="noopener noreferrer" target="_blank">Create your PayPal credentials.</a></li>
-<li><a href="https://github.com/lat9/paypalr/wiki/Configuring-the-Payment-Module" rel="noopener noreferrer" target="_blank">Configure the module\'s additional settings.</a></li>
-</ol>
-<p>Refer to the payment module\'s GitHub Wiki <a href="https://github.com/lat9/paypalr/wiki" rel="noopener noreferrer" target="_blank">articles</a> for additional information.</p>');
+Dieses Modul verwendet die neue PayPal RESTful API und ermöglicht Zahlung via PayPal Wallet oder Kreditkarte via PayPal.<br>Eine detaillierte Installations- und Konfigurationsanleitung finden Sie auf:<br><a href="https://paypalcheckout.zen-cart-pro.at" target="_blank">paypalcheckout.zen-cart-pro.at</a>');
 }
-
-

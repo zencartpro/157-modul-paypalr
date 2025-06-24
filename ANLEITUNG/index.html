@@ -62,7 +62,7 @@ $(document).ready(function(){
         <div class="content-infos">
             <div class="info"><b>Version:</b> 1.1.1</div>
             <div class="info"><b>Autor:</b> <a href="https://www.webchills.at" target="_blank">webchills</a></div>
-            <div class="info"><b>last Update:</b> 24. Juni 2025</div>
+            <div class="info"><b>last Update:</b> 25. Juni 2025</div>
         </div>
         <ul>
             <li class="scroll-to-link active" data-target="content-zweck">
@@ -76,6 +76,9 @@ $(document).ready(function(){
             </li>
             <li class="scroll-to-link" data-target="content-installation">
                 <a>INSTALLATION</a>
+            </li>
+             <li class="scroll-to-link" data-target="content-konfiguration">
+                <a>KONFIGURATION</a>
             </li>
             
             <li class="scroll-to-link" data-target="content-verwendung">
@@ -258,7 +261,7 @@ Dadurch wird das alte Zahlungsmodul nicht vollständig deaktiviert, sondern nur 
 <b>Lassen Sie das alte paypalwpp Modul immer auf dem Status Retired!<br>Nicht deaktivieren und nicht deinstallieren!</b>
   <br><br>
   4)<br>
-  Nun können Sie das neue Modul PayPal Checkout (RESTful) paypalr unter Module Zahlungsarten installieren. Markieren Sie das Modul und clicken Sie auf installieren. Dann stellen Sie das Modul nach Ihren Wünschen ein, alle Einstellungsmöglichkeiten sind dort erklärt.
+  Nun können Sie das neue Modul PayPal Checkout (RESTful) paypalr unter Module Zahlungsarten installieren. Markieren Sie das Modul und clicken Sie auf installieren. Dann stellen Sie das Modul nach Ihren Wünschen ein, alle Einstellungsmöglichkeiten sind dort erklärt. Weitere Infos zur Konfiguration finden Sie weiter unten in dieser Anleitung.
   
  
  <br><br>
@@ -272,26 +275,30 @@ Entfernen Sie falls vorhanden den folgenden Abschnitt komplett:<br>
 tbd
         </div>
         
-<div class="overflow-hidden content-section" id="content-verwendung">
-            <h1>Verwendung</h1>
-            <p><b>BESTELLABLAUF IM FRONTEND</b></p>
-<p>tbd</p>
-<br>
-<p><b>ANPASSUNGSMÖGLICHKEITEN</b></p>
+        <div class="overflow-hidden content-section" id="content-konfiguration">
+            <h1>Konfiguration</h1>
+            <p><b>Aktivierung von Kreditkarten</b></p>
+<p>Dieses Modul unterstützt neben dem normalen PayPal Wallet auch Kreditkartenzahlung via PayPal. Bevor Sie Kreditkartenzahlung aktivieren, prüfen Sie erst Ihre Einstellungen unter Konfiguration > Kreditkarten.<br>Aktivieren Sie hier alle von PayPal unterstützten Kreditkarten. Die entsprechenden Logos werden dann im Checkout bei Auswahl von Kreditkarte angezeigt.</p>
+<p><b>Zusätzliche Module für Rabatte, Versicherung und sonstige Gebühren</b></p>
+<p>Dieses Modul unterstützt neben den üblichen Standard Modulen, die Sie unter Konfiguration > Zusammenfassung aktiv haben auch andere. Falls Sie also außer den beschriebenen noch weitere solcher Order Total Module verwenden, dann tragen Sie die in der Modulkonfiguration ein, damit sie bei der Bestellsumme berücksichtigt werden.</p>
 <p><b>Farbe des Paypal Logos</b>
 <br>Standardmäßig wird ein gelbes PayPal Logo angezeigt:<br>
-<img src="images/yellow.png"><br><br>
-
+<img src="images/yellow.png"><br>
 <br>Alternativ sind auch weiß, grau oder blau möglich:<br>
 <img src="images/white.png"><br><br>
 <img src="images/grey.png"><br><br>
 <img src="images/blue.png"><br><br>
-
 Wenn Sie eine andere Farbe verwenden wollen, können Sie das in folgender Datei ändern:<br>
 includes/languages/german/modules/payment/paypalr.php<br>
 Zeile 133:<br>
 <code>define('MODULE_PAYMENT_PAYPALR_BUTTON_COLOR', 'YELLOW');</code>
 <br>Ändern Sie von YELLOW auf WHITE, GREY oder BLUE</p>
+        </div>
+        
+<div class="overflow-hidden content-section" id="content-verwendung">
+            <h1>Verwendung</h1>
+            <p><b>BESTELLABLAUF IM FRONTEND</b></p>
+<p>tbd</p>
         </div>
         
 <div class="overflow-hidden content-section" id="content-download">
@@ -308,7 +315,7 @@ Zeile 133:<br>
         <div class="overflow-hidden content-section" id="content-changelog">
             <h1>Changelog</h1>
            
-  <p>Version 1.1.1 - 2025-06-13</p>
+  <p>Version 1.1.1 - 2025-06-25</p>
 <ul><li>Initial Release</li><ul>
         
 
@@ -352,5 +359,6 @@ the art of e-commerce - übersetzt, angepasst und erweitert zur Verwendung im de
 </style>
 <!-- END Github Corner Ribbon - to remove -->
 <script src="js/script.js"></script>
+<link rel="stylesheet" type="text/css" href="https://donorbox.org/animate-popup-donate-button.css"><script type="text/javascript" id="donorbox-donate-button-installer" src="https://donorbox.org/install-donate-button.js" data-href="https://donorbox.org/spende-fur-die-weiterentwicklung-der-deutschen-zen-cart-version?default_interval=o" data-style="background: rgb(230, 107, 27); color: rgb(255, 255, 255); text-decoration: none; font-family: Verdana, sans-serif; display: flex; font-size: 16px; padding: 8px 22px 8px 18px; border-radius: 0px 0px 5px 5px; gap: 8px; width: fit-content; line-height: 24px; position: fixed; top: 50%; transform-origin: center center 0px; z-index: 9999; overflow: hidden; left: 20px; transform: translate(-50%, -50%) rotate(-90deg);" data-button-cta="Donate" data-img-src="https://donorbox.org/images/white_logo.svg"></script>
 </body>
 </html>

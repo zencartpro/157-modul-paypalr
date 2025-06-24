@@ -136,6 +136,9 @@ p, .content ul, .content ol{
 code,
 pre{
     font-family: 'Source Code Pro', monospace;
+    color:#222222;
+    text-align:left;
+    margin-left:30px;
 }
 .higlighted{
     background-color: rgba(0,0,0,0.05);
@@ -336,7 +339,7 @@ pre{
 .content-page .content pre {
     max-width: 680px;
 }
-.content pre,
+
 .content blockquote {
     background-color: #FFFFFF;
     border-color: #323f4c;

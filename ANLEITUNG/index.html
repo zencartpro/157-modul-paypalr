@@ -268,11 +268,18 @@ Dadurch wird das alte Zahlungsmodul nicht vollständig deaktiviert, sondern nur 
  5)<br>
 Schalten Sie nun den Wartungsmodus wieder aus und testen Sie die Funktionalität.<br>
 Achten Sie darauf, dass Sie aus Ihrem PayPal Account ausgeloggt sind, falls Sie die PayPal Funktionalität im selben Browser testen wollen!</p>
-<p><b>WICHTIG</b><br>Falls Sie bisher im Shop paypalwpp verwendet haben, dann wird möglicherweise auf der Login Seiet Ihres Shops noch immer Login mit PayPal angezeigt.<br>
+<p><b>WICHTIG</b><br>Falls Sie bisher im Shop paypalwpp verwendet haben, dann wird möglicherweise auf der Login Seite Ihres Shops noch immer Login mit PayPal angezeigt.<br>
 Falls Login mit PayPal noch immer erscheint, prüfen Sie folgende Datei in Ihrem Shop:<br>
 includes/templates/DEINTEMPLATE/templates/tpl_login_default.php<br><br>
-Entfernen Sie falls vorhanden den folgenden Abschnitt komplett:<br>
-tbd
+Entfernen Sie falls vorhanden den entsprechenden Abschnitt komplett, er sollte ca. so aussehen:<br>
+<pre><code>
+&lt;br class=&quot;clearBoth&quot; /&gt;
+ &lt;fieldset id=&quot;paypallogin&quot;&gt;
+&lt;legend&gt;&lt;?php echo HEADING_PAYPAL_CUSTOMER_SPLIT; ?&gt;&lt;/legend&gt;
+&lt;div class=&quot;information&quot;&gt;&lt;?php echo TEXT_PAYPAL_CUSTOMER_SPLIT; ?&gt;&lt;/div&gt;&#x9;
+&lt;div class=&quot;buttonRow back&quot;&gt;&lt;?php require(DIR_FS_CATALOG . DIR_WS_MODULES . &apos;payment/paypal/tpl_ec_button.php&apos;); ?&gt;&lt;/div&gt;
+&lt;/fieldset&gt;
+</code></pre>
         </div>
         
         <div class="overflow-hidden content-section" id="content-konfiguration">

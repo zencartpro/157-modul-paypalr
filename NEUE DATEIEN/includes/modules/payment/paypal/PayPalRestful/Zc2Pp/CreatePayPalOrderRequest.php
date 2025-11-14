@@ -6,7 +6,7 @@
  * @copyright Copyright 2023-2025 Zen Cart Development Team
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  *
- * Last updated: v1.1.0
+ * Last updated: v1.3.0
  */
 namespace PayPalRestful\Zc2Pp;
 
@@ -25,29 +25,29 @@ class CreatePayPalOrderRequest extends ErrorInfo
     /**
      * Debug interface, shared with the PayPalRestfulApi class.
      */
-    protected Logger $log; //- An instance of the Logger class, logs debug tracing information.
+    protected $log; //- An instance of the Logger class, logs debug tracing information.
 
     /**
      * Local "Amount" class; it's got the to-be-used currency for the PayPal order
      * stashed in a static variable!
      */
-    protected Amount $amount;
-    
+    protected $amount;
+
     /**
      * The currency-code in which the PayPal order is to be 'built'.
      */
-    protected string $paypalCurrencyCode;
+    protected $paypalCurrencyCode;
 
     /**
      * The request to be submitted to a v2/orders/create PayPal endpoint.
      */
-    protected array $request;
+    protected $request;
 
     /**
-     * The items' pricing 'breakdown' elements, gathered by getItems and
+     * The items' pricing 'breakdown' elements, gathered by getItems
      * and subsequently used by getOrderTotals.
      */
-    protected array $itemBreakdown = [
+    protected $itemBreakdown = [
         'item_onetime_charges' => 0.0,
         'item_total' => 0,
         'item_tax_total' => 0,
@@ -60,7 +60,7 @@ class CreatePayPalOrderRequest extends ErrorInfo
      * Set by getOrderAmountAndBreakdown and used by buildLevel2Level3Data for
      * the level-3 data.
      */
-    protected float $overallDiscount = 0.0;
+    protected $overallDiscount = 0.0;
 
     // -----
     // Constructor.  "Converts" a Zen Cart order into an PayPal /orders/create object.
@@ -69,6 +69,9 @@ class CreatePayPalOrderRequest extends ErrorInfo
     //
     public function __construct(string $ppr_type, \order $order, array $cc_info, array $order_info, array $ot_diffs)
     {
+        // Instantiate any ErrorInfo dependencies
+        parent::__construct();
+
         $this->log = new Logger();
 
         global $currencies;
@@ -102,6 +105,12 @@ class CreatePayPalOrderRequest extends ErrorInfo
         ];
         $this->request['purchase_units'][0]['items'] = $this->getItems($order->products);
         $this->request['purchase_units'][0]['amount'] = $this->getOrderAmountAndBreakdown($order, $order_info, $ot_diffs);
+
+        // -----
+        // Set soft-descriptor override if defined. Else it will use the branding details already in the PayPal account.
+        if (defined('MODULE_PAYMENT_PAYPALR_SOFT_DESCRIPTOR') && MODULE_PAYMENT_PAYPALR_SOFT_DESCRIPTOR !== '') {
+            $this->request['purchase_units'][0]['soft_descriptor'] = substr(MODULE_PAYMENT_PAYPALR_SOFT_DESCRIPTOR, 0, 22);
+        }
 
         // -----
         // The 'shipping' element is included *only if* the order's got one or more
@@ -217,7 +226,7 @@ class CreatePayPalOrderRequest extends ErrorInfo
             }
 
             // -----
-            // PayPal supports *only* integer-quanties in the order's item list,
+            // PayPal supports *only* integer-quantities in the order's item list,
             // so if any quantity is not an integer value, the items' array
             // can't be included in the PayPal order request.  Noting that this
             // will be an issue for sites that sell fabric or cheeses, for instance.
@@ -228,7 +237,7 @@ class CreatePayPalOrderRequest extends ErrorInfo
                 $this->log->write("!**-> getItems: Product #$products_id ($name) has a non-integer quantity ($quantity); item details cannot be included.");
                 continue;
             }
-            
+
             // -----
             // For the item list to be included, all items must have names that are at least
             // 1-character long.
@@ -388,7 +397,7 @@ class CreatePayPalOrderRequest extends ErrorInfo
     }
 
     // -----
-    // Separate 'calculators' for the 'handling', 'insurance' and 'discount amounts
+    // Separate 'calculators' for the 'handling', 'insurance' and 'discount' amounts
     // for the order.
     //
     protected function calculateHandling(array $ot_diffs): float
@@ -472,8 +481,8 @@ class CreatePayPalOrderRequest extends ErrorInfo
             'expiry' => $cc_info['expiry_year'] . '-' . $cc_info['expiry_month'],
             'billing_address' => Address::get($order->billing),
             'experience_context' => [
-                'return_url' => $cc_info['webhook'] . '?op=3ds_return',
-                'cancel_url' => $cc_info['webhook'] . '?op=3ds_cancel',
+                'return_url' => $cc_info['redirect'] . '?op=3ds_return',
+                'cancel_url' => $cc_info['redirect'] . '?op=3ds_cancel',
             ],
         ];
         if (isset($_POST['ppr_cc_sca_always']) || (defined('MODULE_PAYMENT_PAYPALR_SCA_ALWAYS') && MODULE_PAYMENT_PAYPALR_SCA_ALWAYS === 'true')) {
@@ -510,7 +519,7 @@ class CreatePayPalOrderRequest extends ErrorInfo
         if (isset($purchase_unit['shipping']['address'])) {
             $level_3['shipping_address'] = $purchase_unit['shipping']['address'];
         }
-        
+
         if (!isset($level_2) || empty($level_3)) {
             return [];
         }

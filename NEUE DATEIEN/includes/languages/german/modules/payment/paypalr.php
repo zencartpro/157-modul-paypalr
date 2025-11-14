@@ -5,11 +5,11 @@
 * Zen Cart German Version - www.zen-cart-pro.at
 * @copyright Portions Copyright 2003 osCommerce
 * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
-* @version $Id: paypalr.php 2025-06-13 14:57:24Z webchills $
+* @version $Id: paypalr.php 2025-11-14 14:00:24Z webchills $
 */
 
 define('MODULE_PAYMENT_PAYPALR_TEXT_TITLE', 'PayPal Checkout');
-define('MODULE_PAYMENT_PAYPALR_SUBTITLE', '(Verwenden Sie entweder Ihr <b>PayPal-Konto</b> oder eine <b>Kreditkarte</b>)');
+define('MODULE_PAYMENT_PAYPALR_SUBTITLE', '<br>Verwenden Sie entweder Ihr <b>PayPal-Konto</b> (PayPal Wallet anclicken) <b>oder</b> eine <b>Kreditkarte</b> (Kreditkarte anclicken)');
 define('MODULE_PAYMENT_PAYPALR_TEXT_TITLE_ADMIN', 'PayPal Checkout (RESTful)');
 define('MODULE_PAYMENT_PAYPALR_TEXT_DESCRIPTION', '<strong>PayPal</strong>');
 define('MODULE_PAYMENT_PAYPALR_TEXT_TYPE', 'PayPal Checkout');
@@ -40,6 +40,8 @@ define('MODULE_PAYMENT_PAYPALR_TRANSACTION_ID','Transaktions-ID: '); //- Sollte 
 define('MODULE_PAYMENT_PAYPALR_TRANSACTION_TYPE','Zahlungsart: PayPal Checkout (%s)'); //- %s wird entweder mit 'paypal' oder 'card' ausgefüllt
 define('MODULE_PAYMENT_PAYPALR_TRANSACTION_PAYMENT_STATUS','Zahlungsstatus: '); //- Sollte mit einem Leerzeichen enden
 define('MODULE_PAYMENT_PAYPALR_TRANSACTION_AMOUNT','Betrag: '); //- Sollte mit einem Leerzeichen enden
+define('MODULE_PAYMENT_PAYPALR_BUYER_EMAIL','Käufer Email: ');  //- Sollte mit einem Leerzeichen enden
+define('MODULE_PAYMENT_PAYPALR_FUNDING_SOURCE','Zahlungsart: ');  //- Sollte mit einem Leerzeichen enden
 
 // Wird von der javascript_validation-Methode des Zahlungsmoduls verwendet.
 //
@@ -81,7 +83,7 @@ define('MODULE_PAYMENT_PAYPALR_ALERT_SUBJECT_TOTAL_MISMATCH', 'Berechnungsfehler
 define('MODULE_PAYMENT_PAYPALR_ALERT_SUBJECT_CONFIRMATION_ERROR', 'Zahlungsauswahl bestätigen');
 
 define('MODULE_PAYMENT_PAYPALR_ALERT_ORDER_CREATION', 'Der Status für die Bestellung Nr. %1$u wurde aufgrund eines PayPal-Antwortstatus von %2$s auf Ausstehend gesetzt.');
-define('MODULE_PAYMENT_PAYPALR_ALERT_MISSING_OBSERVER', 'Der Oobserver des Zahlungsmoduls (auto.paypalrestful.php) wurde nicht geladen; das Zahlungsmodul wurde deaktiviert.');
+define('MODULE_PAYMENT_PAYPALR_ALERT_MISSING_OBSERVER', 'Der Observer des Zahlungsmoduls (auto.paypalrestful.php) wurde nicht geladen; das Zahlungsmodul wurde deaktiviert.');
 define('MODULE_PAYMENT_PAYPALR_ALERT_MISSING_NOTIFICATIONS', 'Die erforderlichen Benachrichtigungen in der Klasse order_total.php wurden nicht angewendet; das Zahlungsmodul kann keine Bestellungen aufgeben.');
 define('MODULE_PAYMENT_PAYPALR_ALERT_ORDER_CREATE', 'Beim Versuch, eine Bestellung zu initiieren, wurde von PayPal ein Fehler zurückgegeben. Aus Kulanzgründen wurde Ihrem Kunden nur der Fehlercode angezeigt. Die Details des Fehlers sind unten aufgeführt:' . '\n\n');
 define('MODULE_PAYMENT_PAYPALR_ALERT_TOTAL_MISMATCH', 'Es wurde eine Diskrepanz zwischen dem Gesamtwert einer Bestellung und ihrer Aufschlüsselung festgestellt. Die Bestellung wird ohne Artikel und Kostenaufschlüsselung an PayPal übermittelt:');

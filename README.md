@@ -12,6 +12,12 @@ Mit diesem Modul wird Zahlung via PayPal Checkout über die neue PayPal REST API
 * Dieses Modul unterstützt rein PayPal Wallet und Kreditkarte via PayPal.
 * Apple Pay, Google Pay oder andere Zahlungsarten sind nicht enthalten.
 
+# Voraussetzung
+* Seit Version 1.3.0 setzt dieses Modul folgendes Update voraus:
+* Plugin Manager Update 1.2.0 für Zen Cart 1.5.7j deutsch
+* https://www.zen-cart-pro.at/knowledgebase/plugin-manager-update-fuer-zen-cart-1-5-7j-deutsch/
+* Stellen Sie sicher, dass Sie Ihren 1.5.7j Shop mit diesem Update aktualisiert haben, bevor Sie Version 1.3.0 des paypalr Moduls installieren
+
 # Features
 * Zahlungen können nur autorisiert oder sofort eingezogen werden.
 * Zahlungen können bei Bedarf via Shopadministration rückerstattet werden (ähnlich wie bei der PayPal Express Integration)

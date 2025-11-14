@@ -7,7 +7,7 @@
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: lat9 2023 Nov 16 Modified in v2.0.0 $
  *
- * Last updated: v1.0.5
+ * Last updated: v1.3.0
  */
 namespace PayPalRestful\Zc2Pp;
 
@@ -19,12 +19,12 @@ class ConfirmPayPalPaymentChoiceRequest
     /**
      * The request to be submitted to a v2/orders/{id}/confirm-payment-choice PayPal endpoint.
      */
-    protected array $request;
+    protected $request;
 
     // -----
     // Constructor.  Creates the payload for a PayPal payment-choice confirmation request.
     //
-    public function __construct(string $webhook_name, \order $order)
+    public function __construct(string $listener_endpoint, \order $order)
     {
         // -----
         // Determine the shipping-preference, one of:
@@ -71,8 +71,8 @@ class ConfirmPayPalPaymentChoiceRequest
                     'landing_page' => 'NO_PREFERENCE',  //- LOGIN, GUEST_CHECKOUT or NO_PREFERENCE
                     'shipping_preference' => $shipping_preference,    //- GET_FROM_FILE (allows shipping address change on PayPal), NO_SHIPPING, SET_PROVIDED_ADDRESS (customer can't change)
                     'user_action' => $user_action,  //- PAY_NOW or CONTINUE
-                    'return_url' => $webhook_name . '?op=return',
-                    'cancel_url' => $webhook_name . '?op=cancel',
+                    'return_url' => $listener_endpoint . '?op=return',
+                    'cancel_url' => $listener_endpoint . '?op=cancel',
                 ],
             ],
         ];

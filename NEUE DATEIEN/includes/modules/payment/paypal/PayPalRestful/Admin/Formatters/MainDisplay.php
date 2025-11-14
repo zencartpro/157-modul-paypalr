@@ -5,9 +5,9 @@
  *
  * @copyright Copyright 2023-2025 Zen Cart Development Team
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: lat9 2023 Nov 16 Modified in v2.0.0 $
+ * @version $Id: Aug 2025 $
  *
- * Last updated: v1.1.0
+ * Last updated: v1.3.0
  */
 namespace PayPalRestful\Admin\Formatters;
 
@@ -16,26 +16,26 @@ use PayPalRestful\Zc2Pp\Amount;
 
 class MainDisplay
 {
-    protected string $mainDisplay = '';
+    protected $mainDisplay = '';
 
-    protected array $settledFunds = [
+    protected $settledFunds = [
         'currency' => '',
         'value' => 0,
         'fee' => 0,
         'exchange_rate' => 0,
     ];
 
-    protected string $modals = '';
+    protected $modals = '';
 
-    protected Amount $amount;
+    protected $amount;
 
-    protected string $currencyCode;
+    protected $currencyCode;
 
-    protected array $paypalDbTxns;
+    protected $paypalDbTxns;
 
-    protected bool $jQueryLoadRequired = false;
+    protected $jQueryLoadRequired = false;
 
-    protected static array $txnTableFields = [
+    protected static $txnTableFields = [
         ['name' => MODULE_PAYMENT_PAYPALR_TXN_TYPE, 'field' => 'txn_type', 'align' => 'center'],
         ['name' => MODULE_PAYMENT_PAYPALR_TXN_PARENT_TXN_ID, 'field' => 'txn_id', 'align' => 'center'],
         ['name' => MODULE_PAYMENT_PAYPALR_DATE_CREATED, 'field' => 'date_added', 'align' => 'center'],
@@ -46,7 +46,7 @@ class MainDisplay
         ['name' => MODULE_PAYMENT_PAYPALR_PAYMENT_FEE, 'field' => 'payment_fee', 'align' => 'right', 'is_amount' => true],
     ];
 
-    protected static array $paymentTableFields = [
+    protected static $paymentTableFields = [
         ['name' => MODULE_PAYMENT_PAYPALR_TXN_TYPE, 'field' => 'txn_type', 'align' => 'center'],
         ['name' => MODULE_PAYMENT_PAYPALR_TXN_ID, 'field' => 'txn_id', 'align' => 'center'],
         ['name' => MODULE_PAYMENT_PAYPALR_DATE_CREATED, 'field' => 'date_added', 'align' => 'center'],
@@ -246,11 +246,11 @@ class MainDisplay
                     break;
 
                 case 'AUTHORIZE':
-                    [$action_buttons, $modals] = $this->createAuthButtonsAndModals($txn_index, $main_txn_id, $days_to_settle);
+                    list($action_buttons, $modals) = $this->createAuthButtonsAndModals($txn_index, $main_txn_id, $days_to_settle);
                     break;
 
                 case 'CAPTURE':
-                    [$action_buttons, $modals] = $this->createCaptureButtonsAndModals($txn_index);
+                    list($action_buttons, $modals) = $this->createCaptureButtonsAndModals($txn_index);
                     break;
 
                 case 'REFUND':
@@ -731,6 +731,7 @@ class MainDisplay
 
     protected function createModalButtons(string $submit_button_id, string $toggle_button_name, string $submit_button_name): string
     {
+        defined('TEXT_PLEASE_WAIT') || define('TEXT_PLEASE_WAIT', 'Please wait ...');
         return
             '<div class="btn-group btn-group-justified ppr-button-row">
                 <div class="btn-group">
@@ -738,6 +739,7 @@ class MainDisplay
                 </div>
                 <div class="btn-group">
                     <button type="submit" class="btn btn-danger collapse" id="' . $submit_button_id . '">' . $submit_button_name . '</button>
+                    <script>document.getElementById("' . $submit_button_id . '").addEventListener("click", event => setTimeout(() => {event.target.disabled = true; event.target.innerHTML="' . TEXT_PLEASE_WAIT . '";}, 0)); </script>
                 </div>
             </div>';
     }

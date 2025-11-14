@@ -1,12 +1,13 @@
 <?php
 /**
- * Webhook for PayPal RESTful API payment method (paypalr)
+ * Page-Redirect Listener for PayPal RESTful API payment method (paypalr)
  *
- * @copyright Copyright 2003-2025 Zen Cart Development Team
- * Zen Cart German Version - www.zen-cart-pro.at
+ * @copyright Copyright 2023-2025 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
- * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: ppr_webhook_main.php 2025-04-30 11:20:14Z webchills $
+ * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
+ * @version $Id:  $
+ *
+ * Last updated: v1.3.0
  */
 require 'includes/application_top.php';
 
@@ -15,6 +16,7 @@ require 'includes/application_top.php';
 // done here.  Kill any session and whitescreen since it's an invalid access.
 //
 if (!defined('MODULE_PAYMENT_PAYPALR_STATUS') || MODULE_PAYMENT_PAYPALR_STATUS === 'False') {
+    // @TODO - set a header to 403 Forbidden? or 401 Unauthorized? or 400 Bad Request?
     require DIR_WS_INCLUDES . 'application_bottom.php';
     die();
 }
@@ -29,12 +31,12 @@ $logger = new Logger();
 if (strpos(MODULE_PAYMENT_PAYPALR_DEBUGGING, 'Log') !== false) {
     $logger->enableDebug();
 }
-$logger->write("ppr_webhook_main ($op, " . MODULE_PAYMENT_PAYPALR_SERVER . ") starts.\n" . Logger::logJSON($_GET), true, 'before');
+$logger->write("ppr_listener ($op, " . MODULE_PAYMENT_PAYPALR_SERVER . ") starts.\n" . Logger::logJSON($_GET), true, 'before');
 
 $valid_operations = ['cancel', 'return', '3ds_cancel', '3ds_return'];
 if (!in_array($op, $valid_operations, true)) {
     unset($_SESSION['PayPalRestful']['Order']);
-    $zco_notifier->notify('NOTIFY_PPR_WEBHOOK_MAIN_UNKNOWN_OPERATION', ['op' => $op]);
+    $zco_notifier->notify('NOTIFY_PPR_LISTENER_UNKNOWN_OPERATION', ['op' => $op]);
     zen_redirect(zen_href_link(FILENAME_DEFAULT));  //- FIXME? Perhaps FILENAME_TIME_OUT would be better, since that would kill any session.
 }
 
@@ -72,7 +74,7 @@ if ($op === 'return' && (!isset($_GET['token'], $_SESSION['PayPalRestful']['Orde
 // back to the payment phase of the checkout process.
 //
 if (!isset($_SESSION['PayPalRestful']['Order']['PayerAction'])) {
-    $logger->write('ppr_webhook_main, redirecting to checkout_payment; no PayerAction variables.', true, 'after');
+    $logger->write('ppr_listener, redirecting to checkout_payment; no PayerAction variables.', true, 'after');
     zen_redirect(zen_href_link(FILENAME_CHECKOUT_PAYMENT), '', 'SSL');
 }
 
@@ -82,7 +84,7 @@ if (!isset($_SESSION['PayPalRestful']['Order']['PayerAction'])) {
 // a 3DS verification for a credit-card payment.
 //
 require DIR_WS_MODULES . 'payment/paypalr.php';
-[$client_id, $secret] = paypalr::getEnvironmentInfo();
+list($client_id, $secret) = paypalr::getEnvironmentInfo();
 
 $ppr = new PayPalRestfulApi(MODULE_PAYMENT_PAYPALR_SERVER, $client_id, $secret);
 $ppr->setKeepTxnLinks(true);
@@ -104,7 +106,7 @@ if ($op === '3ds_return') {
     $liability_shift = $auth_result['liability_shift'];
     $enrollment_status = $auth_result['three_d_secure']['enrollment_status'];
     if ($liability_shift === 'UNKNOWN' || ($enrollment_status === 'Y' && $liability_shift === 'NO')) {
-        $messageStack->add_session('checkout_payment', MODULE_PAYMENT_PAYPALR_WEBHOOK_TRY_AGAIN, 'error');
+        $messageStack->add_session('checkout_payment', MODULE_PAYMENT_PAYPALR_REDIRECT_LISTENER_TRY_AGAIN, 'error');
         unset($_SESSION['PayPalRestful']['Order']['PayerAction'], $_SESSION['PayPalRestful']['Order']['authentication_result']);
         zen_redirect(zen_href_link(FILENAME_CHECKOUT_PAYMENT), '', 'SSL');
     }

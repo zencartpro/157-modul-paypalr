@@ -5,11 +5,11 @@
 * Zen Cart German Version - www.zen-cart-pro.at
 * @copyright Portions Copyright 2003 osCommerce
 * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
-* @version $Id: paypalr.php 2025-06-24 11:31:24Z webchills $
+* @version $Id: paypalr.php 2025-11-14 14:06:24Z webchills $
 */
 
 define('MODULE_PAYMENT_PAYPALR_TEXT_TITLE', 'PayPal Checkout');
-define('MODULE_PAYMENT_PAYPALR_SUBTITLE', '(Use either your <b>PayPal Wallet</b> or a <b>Credit Card</b>)');
+define('MODULE_PAYMENT_PAYPALR_SUBTITLE', '<br>Use either your <b>PayPal Account</b> (click on PayPal Wallet) or a <b>Credit Card</b> (click on Credit Card)');
 define('MODULE_PAYMENT_PAYPALR_TEXT_TITLE_ADMIN', 'PayPal Checkout (RESTful)');
 define('MODULE_PAYMENT_PAYPALR_TEXT_DESCRIPTION', '<strong>PayPal</strong>');
 define('MODULE_PAYMENT_PAYPALR_TEXT_TYPE', 'PayPal Checkout');
@@ -41,6 +41,8 @@ define('MODULE_PAYMENT_PAYPALR_TRANSACTION_ID','Transaction ID: ');  //- Should 
 define('MODULE_PAYMENT_PAYPALR_TRANSACTION_TYPE','Payment Type: PayPal Checkout (%s)');  //- %s filled in with either 'paypal' or 'card'
 define('MODULE_PAYMENT_PAYPALR_TRANSACTION_PAYMENT_STATUS','Payment Status: ');  //- Should end with a space
 define('MODULE_PAYMENT_PAYPALR_TRANSACTION_AMOUNT','Amount: ');  //- Should end with a space
+define('MODULE_PAYMENT_PAYPALR_BUYER_EMAIL','Buyer Email: ');  //- Should end with a space
+define('MODULE_PAYMENT_PAYPALR_FUNDING_SOURCE','Funding Source: ');  //- Should end with a space
 
 // Used by the payment module's javascript_validation method.
 //

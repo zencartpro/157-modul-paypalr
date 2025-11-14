@@ -6,7 +6,7 @@
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2025-04-30 11:21:14Z webchills $
+ * @version $Id: paypalpr.php 2025-10-13 10:22:14Z webchills $
  */
 global $psr4Autoloader;
 
@@ -16,4 +16,21 @@ $psr4Autoloader->addPrefix('PayPalRestful\Api', DIR_FS_CATALOG . DIR_WS_MODULES 
 $psr4Autoloader->addPrefix('PayPalRestful\Api\Data', DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/PayPalRestful/Api/Data');
 $psr4Autoloader->addPrefix('PayPalRestful\Common', DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/PayPalRestful/Common');
 $psr4Autoloader->addPrefix('PayPalRestful\Token', DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/PayPalRestful/Token');
+$psr4Autoloader->addPrefix('PayPalRestful\Webhooks', DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/PayPalRestful/Webhooks');
 $psr4Autoloader->addPrefix('PayPalRestful\Zc2Pp', DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/PayPalRestful/Zc2Pp');
+// -----
+// The zcDate class was introduced in zc158. If the
+// class isn't already loaded and the class-file is present, load it.
+//
+if (!class_exists('zcDate') && file_exists(DIR_WS_CLASSES . 'zcDate.php')) {
+    require DIR_WS_CLASSES . 'zcDate.php';
+}
+
+// -----
+// If the zcDate class is loaded (it's not for ZC versions prior to zc158),
+// instantiate the class now for webhook use on zc158 and later.
+//
+global $zcDate;
+if (class_exists('zcDate') && !isset($zcDate)) {
+    $zcDate = new zcDate();
+}

@@ -7,12 +7,12 @@
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2025-06-24 11:41:14Z webchills $
+ * @version $Id: paypalpr.php 2025-11-14 13:49:14Z webchills $
  */
 /**
  * Load the support class' auto-loader.
  */
-require DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/pprAutoload.php';
+require_once DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/pprAutoload.php';
 
 use PayPalRestful\Admin\AdminMain;
 use PayPalRestful\Admin\DoAuthorization;
@@ -34,37 +34,37 @@ use PayPalRestful\Zc2Pp\CreatePayPalOrderRequest;
  */
 class paypalr extends base
 {
-    protected const CURRENT_VERSION = '1.1.1';
+    const CURRENT_VERSION = '1.3.0';
 
-    protected const WEBHOOK_NAME = HTTP_SERVER . DIR_WS_CATALOG . 'ppr_webhook_main.php';
+    const REDIRECT_LISTENER = HTTP_SERVER . DIR_WS_CATALOG . 'ppr_listener.php';
 
     /**
      * name of this module
      *
      * @var string
      */
-    public string $code;
+    public $code;
 
     /**
      * displayed module title
      *
      * @var string
      */
-    public string $title;
+    public $title;
 
     /**
      * displayed module description
      *
      * @var string
      */
-    public string $description = '';
+    public $description = '';
 
     /**
      * module status - set based on various config and zone criteria
      *
      * @var boolean
      */
-    public bool $enabled;
+    public $enabled;
 
     /**
      * Installation 'check' flag
@@ -78,14 +78,14 @@ class paypalr extends base
      *
      * @var int
      */
-    public int $zone;
+    public $zone;
 
     /**
      * debugging flags
      *
      * @var boolean
      */
-    protected bool $emailAlerts;
+    protected $emailAlerts;
 
     /**
      * sort order of display
@@ -99,7 +99,7 @@ class paypalr extends base
      *
     * @var int
      */
-    public int $order_status;
+    public $order_status;
 
     /**
      * URLs used during checkout if this is the selected payment method
@@ -124,45 +124,43 @@ class paypalr extends base
     /**
      * Debug interface, shared with the PayPalRestfulApi class.
      */
-    protected Logger $log; //- An instance of the Logger class, logs debug tracing information.
+    protected $log; //- An instance of the Logger class, logs debug tracing information.
 
     /**
      * An array to maintain error information returned by various PayPalRestfulApi methods.
      */
-    protected ErrorInfo $errorInfo; //- An instance of the ErrorInfo class, logs debug tracing information.
+    protected $errorInfo; //- An instance of the ErrorInfo class, logs debug tracing information.
 
     /**
      * An instance of the PayPalRestfulApi class.
-     *
-     * @var object PayPalRestfulApi
      */
-    protected PayPalRestfulApi $ppr;
+    protected $ppr;
 
     /**
      * An array (set by before_process) containing the captured/authorized order's
      * PayPal response information, for use by after_order_create to populate the
      * paypal table's record once the associated order's ID is known.
      */
-    protected array $orderInfo = [];
+    protected $orderInfo = [];
 
     /**
      * An array (set by validateCardInformation) containing the card-related information
      * to be sent to PayPal for a 'card' transaction.
      */
-    private array $ccInfo = [];
+    private $ccInfo = [];
 
     /**
      * Indicates whether/not credit-card payments are to be accepted during storefront
      * processing and, if so, an array that maps a credit-card's name to its associated
      * image.
      */
-    protected bool $cardsAccepted = false;
-    protected array $cardImages = [];
+    protected $cardsAccepted = false;
+    protected $cardImages = [];
 
     /**
      * Indicates whether/not an otherwise approved payment is pending review.
      */
-    protected bool $paymentIsPending = false;
+    protected $paymentIsPending = false;
 
     /**
      * Indicates whether/not we're on the One-Page-Checkout confirmation page.  Possibly
@@ -172,23 +170,23 @@ class paypalr extends base
      * It'll be needed if this payment method is configured by OPC to 'not need' confirmation
      * so that we can fake out the before/after session-check.
      */
-    protected bool $onOpcConfirmationPage = false;
-    protected array $paypalRestfulSessionOnEntry = [];
+    protected $onOpcConfirmationPage = false;
+    protected $paypalRestfulSessionOnEntry = [];
 
     /**
      * A couple of flags (used by the 'selection' method) which are set by the
      * class-constuctor to indicate whether/not the storefront's currently active billing/shipping
      * addresses are associated with countries not supported by PayPal.
      */
-    protected bool $billingCountryIsSupported = true;
-    protected bool $shippingCountryIsSupported = true;
+    protected $billingCountryIsSupported = true;
+    protected $shippingCountryIsSupported = true;
 
     /**
      * class constructor
      */
     public function __construct()
     {
-        global $order, $messageStack;
+        global $order, $messageStack, $loaderPrefix;
 
         $this->code = 'paypalr';
 
@@ -203,13 +201,11 @@ class paypalr extends base
 
         $this->sort_order = defined('MODULE_PAYMENT_PAYPALR_SORT_ORDER') ? ((int)MODULE_PAYMENT_PAYPALR_SORT_ORDER) : null;
         if (null === $this->sort_order) {
-            return false;
-        }
-
-        $this->enabled = (MODULE_PAYMENT_PAYPALR_STATUS === 'True' || (IS_ADMIN_FLAG === true && MODULE_PAYMENT_PAYPALR_STATUS === 'Retired'));
-        if ($this->enabled === false) {
             return;
         }
+
+        // @TODO - "Retired" check should accommodate 'webhook' mode too, because we do want to still respond to webhooks when in Retired mode.
+        $this->enabled = (MODULE_PAYMENT_PAYPALR_STATUS === 'True' || (IS_ADMIN_FLAG === true && MODULE_PAYMENT_PAYPALR_STATUS === 'Retired'));
 
         $this->errorInfo = new ErrorInfo();
 
@@ -245,7 +241,7 @@ class paypalr extends base
                 $this->title .= ' <strong>(Debug)</strong>';
             }
             $this->tableCheckup();
-        } else {
+        } elseif ($this->enabled === true) {
             // -----
             // Ensure that the payment-module's observer-class is loaded (auto.paypalrestful.php).  That
             // observer gathers order-totals' changes to the order's 'info', enabling the order-creation
@@ -253,8 +249,9 @@ class paypalr extends base
             //
             // No observer?  No payment via this module and it's auto-disabled.
             //
-            // The one exception to the above 'rule' is any load from the ipn_main_handler.  The
-            // paypal_ipn.core.php (for whatever reason) doesn't load the auto-loaded observers,
+            // The two exception to the above 'rule' is any load from the ipn_main_handler or a webhook listener.
+            // Webhook classes don't need the Observer, so we just return.
+            // The paypal_ipn.core.php (for whatever reason) doesn't load the auto-loaded observers,
             // so the paypalr one won't be there.  If that's the case, just indicate that the
             // payment module is disabled and return.
             //
@@ -262,8 +259,7 @@ class paypalr extends base
             if (!isset($zcObserverPaypalrestful)) {
                 $this->enabled = false;
 
-                global $loaderPrefix;
-                if (($loaderPrefix ?? '') === 'paypal_ipn') {
+                if (in_array($loaderPrefix ?? '', ['paypal_ipn', 'webhook'], true)) {
                     return;
                 }
                 $this->setConfigurationDisabled(MODULE_PAYMENT_PAYPALR_ALERT_MISSING_OBSERVER);
@@ -291,11 +287,16 @@ class paypalr extends base
 
         // -----
         // Validate the configuration, e.g. that the supplied Client ID/Secret are
-        // valid for the active PayPal server. If the configuration's invalid (admin/storefront)
-        // or if we're processing for the admin, all finished here!
+        // valid for the active PayPal server. If valid, we check the webhook registrations.
+        // If the configuration's invalid (admin/storefront)
+        // or if we're processing for the admin or a webhook, all finished here!
         //
-        $this->enabled = $this->validateConfiguration($curl_installed);
-        if ($this->enabled === false || IS_ADMIN_FLAG === true) {
+        $this->enabled = ($this->enabled === true && $this->validateConfiguration($curl_installed));
+        if ($this->enabled && IS_ADMIN_FLAG === true) {
+            // register/update known webhooks
+            $this->ppr->registerAndUpdateSubscribedWebhooks();
+        }
+        if ($this->enabled === false || IS_ADMIN_FLAG === true || $loaderPrefix === 'webhook') {
             return;
         }
 
@@ -437,7 +438,33 @@ class paypalr extends base
                          VALUES
                             ('3D Secure für <b>jede</b> Transaktion?', 'MODULE_PAYMENT_PAYPALR_SCA_ALWAYS', 'Stellen Sie auf <var>true</var> um 3D Secure für <b>jede</b> Transaktion zu erzwingen, unabhängig davon ob SCA für die Transaktion vorgeschrieben ist.<br><br><b>Voreinstellung</b>: <var>false</var>', 43, now(), now())"
                     );
-                    break;
+
+/* falls through */
+                case version_compare(MODULE_PAYMENT_PAYPALR_VERSION, '1.2.0', '<'): //- Fall through from above
+                    $db->Execute(
+                        "INSERT IGNORE INTO " . TABLE_CONFIGURATION . "
+                            (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, use_function, date_added)
+                         VALUES
+                            ('Store (Sub-Brand) Identifier at PayPal', 'MODULE_PAYMENT_PAYPALR_SOFT_DESCRIPTOR', '', 'On customer credit card statements, your company name will show as <code>PAYPAL*(yourname)*(your-sub-brand-name)</code> (max 22 letters for (yourname)*(your-sub-brand-name)). You can add the sub-brand-name here if you want to differentiate purchases from this store vs any other PayPal sales you make.', 6, 0, NULL, NULL, now())"
+                    );
+                     $db->Execute(                    
+                        "INSERT IGNORE INTO " . TABLE_CONFIGURATION_LANGUAGE . "
+                            (configuration_title, configuration_key, configuration_description, configuration_language_id, last_modified, date_added)
+                         VALUES
+                            ('Shop (Sub-Brand) Kennung', 'MODULE_PAYMENT_PAYPALR_SOFT_DESCRIPTOR', 'Auf den Kreditkartenabrechnungen Ihrer Kunden wird Ihr Firmenname als <code>PAYPAL*(IhrName)*(Ihr-Submarkenname)</code> angezeigt (maximal 22 Zeichen für (IhrName)*(Ihr-Submarkenname)). Sie können hier den Submarkennamen hinzufügen, wenn Sie die Einkäufe in diesem Shop von anderen PayPal-Verkäufen unterscheiden möchten.', 43, now(), now())"
+                    );
+		    
+	
+
+
+                    // -----
+                    // Starting with v1.2.0, installing the payment module includes creating
+                    // its root-directory listeners/handlers from a copy within the module's
+                    // storefront includes directory.
+                    //
+                    $this->manageRootDirectoryFiles();
+
+                /* falls through */
                 default:
                     break;
             }
@@ -551,7 +578,7 @@ class paypalr extends base
         //
         // Determine which (live vs. sandbox) credentials are in use.
         //
-        [$client_id, $secret] = self::getEnvironmentInfo();
+        list($client_id, $secret) = self::getEnvironmentInfo();
 
         // -----
         // Ensure that the current environment's credentials are set and, if so,
@@ -680,8 +707,8 @@ class paypalr extends base
     // --------------------------------------------
 
     /**
-     * Validate the credit card information via javascript (Number, Owner, and CVV lengths), if
-     * card payments are to be accepted.
+     * Validate the credit card information via javascript (Number, Owner, and CVV lengths),
+     * if card payments are to be accepted.
      */
     public function javascript_validation(): string
     {
@@ -747,7 +774,7 @@ class paypalr extends base
         ];
 
         // -----
-        // Return **only** the PayPal selection as a button, if cards aren't to be accepted. If the customer's
+        // Return **only** the PayPal selection as a button, if cards aren't to be accepted. If the customer is
         // shipping to a country unsupported by PayPal, add some jQuery to disable the associated payment-module
         // selection and display a note to the customer.
         //
@@ -789,7 +816,7 @@ class paypalr extends base
             $expires_month[] = ['id' => sprintf('%02u', $month), 'text' => $zcDate->output('%B - (%m)', mktime(0, 0, 0, $month, 1))];
         }
         $this_year = date('Y');
-        for ($year = $this_year; $year < $this_year + 15; $year++) {
+        for ($year = $this_year; $year < (int)$this_year + 15; $year++) {
             $expires_year[] = ['id' => $year, 'text' => $year];
         }
 
@@ -844,6 +871,7 @@ class paypalr extends base
                         '<style nonce="">' . file_get_contents($css_file_name) . '</style>' .
                         '<span class="ppr-choice-label">' . MODULE_PAYMENT_PAYPALR_CHOOSE_PAYPAL . '</span>',
                     'field' =>
+                        
                         '<div id="ppr-choice-paypal" class="ppr-button-choice">' .
                             zen_draw_radio_field('ppr_type', 'paypal', $paypal_selected, 'id="ppr-paypal" class="ppr-choice"') .
                             '<label for="ppr-paypal" class="ppr-choice-label">' .
@@ -996,12 +1024,12 @@ class paypalr extends base
         }
 
         // -----
-        // If the payment is *not* to be processed by PayPal 'proper' (e.g. a 'card' payment) or if
+        // If the payment is *not* to be processed by PayPal wallet (type='paypal') (e.g. a 'card' payment) or if
         // the customer has already confirmed their payment choice at PayPal, nothing further to do
         // at this time.
         //
         // Note: The 'wallet_payment_confirmed' element of the payment-module's session-based order is set by the
-        // ppr_webhook_main.php processing when the customer returns from selecting a payment means for
+        // ppr_listener.php processing when the customer returns from selecting a payment means for
         // the 'paypal' payment-source.
         //
         if ($ppr_type !== 'paypal' || isset($_SESSION['PayPalRestful']['Order']['wallet_payment_confirmed'])) {
@@ -1011,13 +1039,13 @@ class paypalr extends base
         }
 
         // -----
-        // The payment is to be processed by PayPal 'proper', send the customer off to
+        // The payment is to be processed by PayPal wallet (type='paypal'), send the customer off to
         // PayPal to confirm their payment source.  That'll either come back to the checkout_confirmation
-        // page (via the payment module's webhook) if they choose a payment means or back to the
-        // checkout_payment page if they cancelled-out from PayPal.
+        // page (via the payment module's ppr_listener) if they choose a payment means
+        // or back to the checkout_payment page if they cancelled-out from PayPal.
         //
         global $order;
-        $confirm_payment_choice_request = new ConfirmPayPalPaymentChoiceRequest(self::WEBHOOK_NAME, $order);
+        $confirm_payment_choice_request = new ConfirmPayPalPaymentChoiceRequest(self::REDIRECT_LISTENER, $order);
         $payment_choice_response = $this->ppr->confirmPaymentSource($_SESSION['PayPalRestful']['Order']['id'], $confirm_payment_choice_request->get());
         if ($payment_choice_response === false || $payment_choice_response['status'] !== PayPalRestfulApi::STATUS_PAYER_ACTION_REQUIRED) {
             $this->sendAlertEmail(
@@ -1047,7 +1075,7 @@ class paypalr extends base
         }
 
         // -----
-        // Save the posted variables from the payment phase of checkout; the webhook will use those to restore after
+        // Save the posted variables from the payment phase of checkout; the ppr_listener will use those to restore after
         // PayPal returns.
         //
         global $current_page_base;
@@ -1114,7 +1142,7 @@ class paypalr extends base
             'expiry_year' => $cc_validation->cc_expiry_year,
             'name' => $cc_owner,
             'security_code' => $cvv_posted,
-            'webhook' => self::WEBHOOK_NAME,
+            'redirect' => self::REDIRECT_LISTENER,
         ];
         return true;
     }
@@ -1152,9 +1180,9 @@ class paypalr extends base
         $create_order_request = new CreatePayPalOrderRequest($ppr_type, $order, $this->ccInfo, $order_info, $zcObserverPaypalrestful->getOrderTotalChanges());
 
         // -----
-        // If the order's request-creation resulted in a calculation mismatch, send an alert if
-        // configured.
-        //
+        // If the order's request-creation resulted in a calculation mismatch,
+        // send an alert if configured.
+        // Deactivated in 1.5.7j German to avoid useless email alerts
         $order_amount_mismatch = $create_order_request->getBreakdownMismatch();
 //        if (count($order_amount_mismatch) !== 0) {
 //            $this->sendAlertEmail(
@@ -1218,6 +1246,7 @@ class paypalr extends base
         //
         // Force the module's status to disabled and kick the customer back to the payment phase of the checkout process.
         //
+        /** @var zcObserverPaypalrestful $zcObserverPaypalrestful */
         global $zcObserverPaypalrestful;
         $order_info = $zcObserverPaypalrestful->getLastOrderValues();
         if (count($order_info) === 0) {
@@ -1240,6 +1269,7 @@ class paypalr extends base
     protected function createOrderGuid(\order $order, string $ppr_type): string
     {
         $_SESSION['PayPalRestful']['CompletedOrders'] = $_SESSION['PayPalRestful']['CompletedOrders'] ?? 0;
+        unset($order->info['ip_address']);
         $hash_data = MODULE_PAYMENT_PAYPALR_TRANSACTION_MODE . json_encode($order) . $_SESSION['securityToken'] . $_SESSION['PayPalRestful']['CompletedOrders'];
         if ($ppr_type !== 'paypal') {
             $hash_data .= json_encode($this->ccInfo);
@@ -1496,7 +1526,7 @@ class paypalr extends base
     protected function createCreditCardOrder(\order $order, array $order_info): array
     {
         // -----
-        // If we came back from a 3DS response (as set by ppr_webhook_main.php), check
+        // If we came back from a 3DS response (as set by ppr_listener.php), check
         // that response, redirecting back to the payment phase of checkout if an issue
         // was reported.  Otherwise, the payment is captured or authorized (depending on
         // the site's configuration) and the response from that action is returned to
@@ -1571,8 +1601,8 @@ class paypalr extends base
         }
 
         // -----
-        // If we've gotten this far, the order has been created at PayPal.  Save
-        // the pertinent information in the session.
+        // If we've gotten this far, the order has been created at PayPal.
+        // Save the pertinent information in the session.
         //
         $_SESSION['PayPalRestful']['Order']['status'] = $response['status'];
         $_SESSION['PayPalRestful']['Order']['id'] = $response['id'];
@@ -1580,8 +1610,8 @@ class paypalr extends base
         // -----
         // See if a 'payer-action' link is sent back (it will be if the customer needs to
         // perform an SCA verification).  If such a link is found, send the customer off
-        // to that verification link; they'll come back to the store via a webhook back
-        // to the payment module's /ppr_webhook_main.php.
+        // to that verification link; they'll come back to the store via a listener redirect
+        // back to the payment module's /ppr_listener.php.
         //
         foreach ($response['links'] as $next_link) {
             if ($next_link['rel'] === 'payer-action') {
@@ -1947,7 +1977,8 @@ class paypalr extends base
      * identical order-contents within the same session have a unique GUID.
      *
      * Add a customer-visible order-status-history record identifying the
-     * associated transaction ID, payment method, timestamp, status and amount.
+     * associated transaction ID, payment method, timestamp, status, amount,
+     * and payment-source, buyer email and addresses, if not blank.
      */
     public function after_process()
     {
@@ -1964,7 +1995,14 @@ class paypalr extends base
             sprintf(MODULE_PAYMENT_PAYPALR_TRANSACTION_TYPE, $payment_info['payment_type']) . "\n" .
             $timestamp .
             MODULE_PAYMENT_PAYPALR_TRANSACTION_PAYMENT_STATUS . $this->orderInfo['payment_status'] . "\n" .
-            MODULE_PAYMENT_PAYPALR_TRANSACTION_AMOUNT . $payment_info['amount'];
+            MODULE_PAYMENT_PAYPALR_TRANSACTION_AMOUNT . $payment_info['amount'] . "\n";
+
+        $payment_type = $this->orderInfo['payment_info']['payment_type'];
+        $message .= MODULE_PAYMENT_PAYPALR_FUNDING_SOURCE . $payment_type . "\n";
+
+        if (!empty($this->orderInfo['payment_source'][$payment_type]['email_address'])) {
+            $message .= MODULE_PAYMENT_PAYPALR_BUYER_EMAIL . $this->orderInfo['payment_source'][$payment_type]['email_address'] . "\n";
+        }
         zen_update_orders_history($this->orderInfo['orders_id'], $message, null, -1, 0);
 
         // -----
@@ -2082,12 +2120,13 @@ class paypalr extends base
              VALUES
                 ('Module Version', 'MODULE_PAYMENT_PAYPALR_VERSION', '$current_version', 'Currently-installed module version.', 6, 0, 'zen_cfg_read_only(', NULL, now()),
                 ('Enable this Payment Module?', 'MODULE_PAYMENT_PAYPALR_STATUS', 'False', 'Do you want to enable this payment module? Use the <b>Retired</b> setting if you are planning to remove this payment module but still have administrative actions to perform against orders placed with this module.', 6, 0, 'zen_cfg_select_option([\'True\', \'False\', \'Retired\'], ', NULL, now()),
+               
                 ('Environment', 'MODULE_PAYMENT_PAYPALR_SERVER', 'live', '<b>Live: </b> Used to process Live transactions<br><b>Sandbox: </b>For developers and testing', 6, 0, 'zen_cfg_select_option([\'live\', \'sandbox\'], ', NULL, now()),
                 ('Client ID (live)', 'MODULE_PAYMENT_PAYPALR_CLIENTID_L', '', 'The <em>Client ID</em> from your PayPal API Signature settings under *API Access* for your <b>live</b> site. Required if using the <b>live</b> environment.', 6, 0, NULL, 'zen_cfg_password_display', now()),
                 ('Client Secret (live)', 'MODULE_PAYMENT_PAYPALR_SECRET_L', '', 'The <em>Client Secret</em> from your PayPal API Signature settings under *API Access* for your <b>live</b> site. Required if using the <b>live</b> environment.', 6, 0, NULL, 'zen_cfg_password_display', now()),
-                ('Client ID (sandbox)', 'MODULE_PAYMENT_PAYPALR_CLIENTID_S', '', 'The <em>Client ID</em> from your PayPal API Signature settings under *API Access* for your <b>sandbox</b> site. Required if using the <b>sandbox</b> environment..', 6, 0, NULL, 'zen_cfg_password_display', now()),
+                ('Client ID (sandbox)', 'MODULE_PAYMENT_PAYPALR_CLIENTID_S', '', 'The <em>Client ID</em> from your PayPal API Signature settings under *API Access* for your <b>sandbox</b> site. Required if using the <b>sandbox</b> environment.', 6, 0, NULL, 'zen_cfg_password_display', now()),
                 ('Client Secret (sandbox)', 'MODULE_PAYMENT_PAYPALR_SECRET_S', '', 'The <em>Client Secret</em> from your PayPal API Signature settings under *API Access* for your <b>sandbox</b> site. Required if using the <b>sandbox</b> environment.', 6, 0, NULL, 'zen_cfg_password_display', now()),
-                ('Sort order of display.', 'MODULE_PAYMENT_PAYPALR_SORT_ORDER', '0', 'Sort order of display. Lowest is displayed first.', 6, 0, NULL, NULL, now()),
+                ('Sort order of display.', 'MODULE_PAYMENT_PAYPALR_SORT_ORDER', '-1', 'Sort order of display. Lowest is displayed first.', 6, 0, NULL, NULL, now()),
                 ('Payment Zone', 'MODULE_PAYMENT_PAYPALR_ZONE', '0', 'If a zone is selected, only enable this payment method for that zone.', 6, 0, 'zen_cfg_pull_down_zone_classes(', 'zen_get_zone_class_title', now()),
                 ('Completed Order Status', 'MODULE_PAYMENT_PAYPALR_ORDER_STATUS_ID', '2', 'Set the status of orders whose payment has been successfully <em>captured</em> to this status.<br>Recommended: <b>Processing[2]</b><br>', 6, 0, 'zen_cfg_pull_down_order_statuses(', 'zen_get_order_status_name', now()),
                 ('Set Unpaid Order Status', 'MODULE_PAYMENT_PAYPALR_ORDER_PENDING_STATUS_ID', '1', 'Set the status of orders whose payment has been successfully <em>authorized</em> to this status.<br>Recommended: <b>Pending[1]</b><br>', 6, 0, 'zen_cfg_pull_down_order_statuses(', 'zen_get_order_status_name', now()),
@@ -2095,6 +2134,7 @@ class paypalr extends base
                 ('Set Voided Order Status', 'MODULE_PAYMENT_PAYPALR_VOIDED_STATUS_ID', '5', 'Set the status of <em>voided</em> orders to this status.<br>Recommended: <b>Cancelled[5]</b><br>', 6, 0, 'zen_cfg_pull_down_order_statuses(', 'zen_get_order_status_name', now()),
                 ('Set Held Order Status', 'MODULE_PAYMENT_PAYPALR_HELD_STATUS_ID', '1', 'Set the status of orders that are held for review to this status.<br>Recommended: <b>Cancelled[5]</b><br>', 6, 0, 'zen_cfg_pull_down_order_statuses(', 'zen_get_order_status_name', now()),
                 ('Store (Brand) Name at PayPal', 'MODULE_PAYMENT_PAYPALR_BRANDNAME', '', 'The name of your store as it should appear on the PayPal login page. If blank, your store name will be used.', 6, 0, NULL, NULL, now()),
+                ('Store (Sub-Brand) Identifier at PayPal', 'MODULE_PAYMENT_PAYPALR_SOFT_DESCRIPTOR', '', 'On customer credit card statements, your company name will show as <code>PAYPAL*(yourname)*(your-sub-brand-name)</code> (max 22 letters for (yourname)*(your-sub-brand-name)). You can add the sub-brand-name here if you want to differentiate purchases from this store vs any other PayPal sales you make.', 6, 0, NULL, NULL, now()),
                 ('Payment Action', 'MODULE_PAYMENT_PAYPALR_TRANSACTION_MODE', 'Final Sale', 'How do you want to obtain payment?<br><b>Default: Final Sale</b>', 6, 0, 'zen_cfg_select_option([\'Auth Only\', \'Final Sale\'], ', NULL,  now()),
                 ('Transaction Currency', 'MODULE_PAYMENT_PAYPALR_CURRENCY', 'Selected Currency', 'In which currency should the order be sent to PayPal?<br>NOTE: If an unsupported currency is sent to PayPal, it will be auto-converted to the <em>Fall-back Currency</em>.<br><b>Default: Selected Currency</b>', 6, 0, 'zen_cfg_select_option([\'Selected Currency\', $currencies_list], ', NULL, now()),
                 ('Fall-back Currency', 'MODULE_PAYMENT_PAYPALR_CURRENCY_FALLBACK', 'EUR', 'If the <b>Transaction Currency</b> is set to <em>Selected Currency</em>, what currency should be used as a fall-back when the customer\'s selected currency is not supported by PayPal?<br><b>Default: EUR</b>', 6, 0, 'zen_cfg_select_option([\'EUR\', \'USD\', \'GBP\'], ', NULL, now()),
@@ -2132,7 +2172,8 @@ class paypalr extends base
                ('Werden zusätzliche <var>Bearbeitungsgebühr</var> Module verwendet?', 'MODULE_PAYMENT_PAYPALR_HANDLING_OT', 'Geben Sie mit einer durch Kommata getrennten Liste (Leerzeichen dazwischen sind OK) alle unter Module > Zusammenfassung verwendeten Module <em>außer</em> <code>ot_loworderfee</code> an, die eine <em>Bearbeitungsgebühr</em> zu einer Bestellung hinzufügen. Belassen Sie die Einstellung als leere Zeichenkette, wenn es keine gibt (Standardeinstellung).', 43, NOW(), NOW()),
                ('Werden zusätzliche <var>Versicherungsgebühr</var> Module verwendet?', 'MODULE_PAYMENT_PAYPALR_INSURANCE_OT', 'Geben Sie mit einer durch Kommata getrennten Liste (Leerzeichen dazwischen sind OK) alle unter Module > Zusammenfassung verwendeten Module an, die eine <em>Versicherungsgebühr</em> zu einer Bestellung hinzufügen. Belassen Sie die Einstellung als leere Zeichenfolge, wenn es keine gibt (Standardeinstellung).', 43, NOW(), NOW()),
                ('Werden zusätzliche <var>Rabatt</var> Module verwendet?', 'MODULE_PAYMENT_PAYPALR_DISCOUNT_OT', 'Geben Sie mit einer durch Kommata getrennten Liste (Leerzeichen dazwischen sind OK) alle unter Module > Zusammenfassung verwendeten Module an <em>außer</em> <code>ot_coupon</code>, <code>ot_gv</code> und <code>ot_group_pricing</code> &mdash; die einen <em>Rabatt</em> zu einer Bestellung hinzufügen. Belassen Sie die Einstellung als leere Zeichenkette, wenn es keine gibt (Standard).', 43, NOW(), NOW()),
-               ('Debug Modus', 'MODULE_PAYMENT_PAYPALR_DEBUGGING', 'Möchten Sie den Debug-Modus aktivieren?<br><br>Off = kein Logfile<br>Alerts Only = Logfile bei Transaktionsfehlern<br>Log File = Detaillierte Logfiles für alle Transaktionen<br>Log and Email = Ein vollständiges detailliertes Protokoll der fehlgeschlagenen Transaktionen wird dem Shopinhaber per E-Mail zugesandt.<br><br>Zur Fehleranalye ist die Einstellung Log File sinnvoll. Log and Email führt zu extrem vielen Emails.', 43, NOW(), NOW())
+               
+	       ('Debug Modus', 'MODULE_PAYMENT_PAYPALR_DEBUGGING', 'Möchten Sie den Debug-Modus aktivieren?<br><br>Off = kein Logfile<br>Alerts Only = Logfile bei Transaktionsfehlern<br>Log File = Detaillierte Logfiles für alle Transaktionen<br>Log and Email = Ein vollständiges detailliertes Protokoll der fehlgeschlagenen Transaktionen wird dem Shopinhaber per E-Mail zugesandt.<br><br>Zur Fehleranalye ist die Einstellung Log File sinnvoll. Log and Email führt zu extrem vielen Emails.', 43, NOW(), NOW())
      ");
 
         // -----
@@ -2193,12 +2234,11 @@ class paypalr extends base
         }
 
         // -----
-        // Starting with v1.1.1, installing the payment module includes creating
-        // its root-directory webhook from a copy within the module's storefront
-        // includes directory.
+        // Starting with v1.2.0, installing the payment module includes creating
+        // its root-directory listeners/handlers from a copy within the module's
+        // storefront includes directory.
         //
-        $ppr_webhook_main = file_get_contents(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/PayPalRestful/ppr_webhook_main.php');
-        file_put_contents(DIR_FS_CATALOG . 'ppr_webhook_main.php', $ppr_webhook_main);
+        $this->manageRootDirectoryFiles();
 
         // -----
         // Define the module's current version so that the tableCheckup method
@@ -2206,14 +2246,39 @@ class paypalr extends base
         //
         define('MODULE_PAYMENT_PAYPALR_VERSION', '0.0.0');
         $this->tableCheckup();
+
         $this->notify('NOTIFY_PAYMENT_PAYPALR_INSTALLED');
     }
 
+    protected function manageRootDirectoryFiles()
+    {
+        // -----
+        // Starting with v1.2.0, installing the payment module includes creating
+        // its root-directory listeners/handlers from a copy within the module's
+        // storefront includes directory.
+        //
+        $ppr_listener = file_get_contents(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/PayPalRestful/ppr_listener.php');
+        file_put_contents(DIR_FS_CATALOG . 'ppr_listener.php', $ppr_listener);
+
+        $ppr_webhook = file_get_contents(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/PayPalRestful/ppr_webhook.php');
+        file_put_contents(DIR_FS_CATALOG . 'ppr_webhook.php', $ppr_webhook);
+
+        // We also delete the old ppr_webhook_main.php file if present
+        if (file_exists(DIR_FS_CATALOG . 'ppr_webhook_main.php')) {
+            unlink(DIR_FS_CATALOG . 'ppr_webhook_main.php');
+        }
+    }
     public function keys(): array
     {
         return [
             'MODULE_PAYMENT_PAYPALR_VERSION',
             'MODULE_PAYMENT_PAYPALR_STATUS',
+            'MODULE_PAYMENT_PAYPALR_BRANDNAME',
+            'MODULE_PAYMENT_PAYPALR_SOFT_DESCRIPTOR',
+            'MODULE_PAYMENT_PAYPALR_TRANSACTION_MODE',
+            'MODULE_PAYMENT_PAYPALR_SCA_ALWAYS',
+            'MODULE_PAYMENT_PAYPALR_ACCEPT_CARDS',
+            
             'MODULE_PAYMENT_PAYPALR_SORT_ORDER',
             'MODULE_PAYMENT_PAYPALR_ZONE',
             'MODULE_PAYMENT_PAYPALR_SERVER',
@@ -2221,17 +2286,13 @@ class paypalr extends base
             'MODULE_PAYMENT_PAYPALR_SECRET_L',
             'MODULE_PAYMENT_PAYPALR_CLIENTID_S',
             'MODULE_PAYMENT_PAYPALR_SECRET_S',
+            'MODULE_PAYMENT_PAYPALR_CURRENCY',
+            'MODULE_PAYMENT_PAYPALR_CURRENCY_FALLBACK',
             'MODULE_PAYMENT_PAYPALR_ORDER_STATUS_ID',
             'MODULE_PAYMENT_PAYPALR_ORDER_PENDING_STATUS_ID',
             'MODULE_PAYMENT_PAYPALR_REFUNDED_STATUS_ID',
             'MODULE_PAYMENT_PAYPALR_VOIDED_STATUS_ID',
             'MODULE_PAYMENT_PAYPALR_HELD_STATUS_ID',
-            'MODULE_PAYMENT_PAYPALR_CURRENCY',
-            'MODULE_PAYMENT_PAYPALR_CURRENCY_FALLBACK',
-            'MODULE_PAYMENT_PAYPALR_BRANDNAME',
-            'MODULE_PAYMENT_PAYPALR_TRANSACTION_MODE',
-            'MODULE_PAYMENT_PAYPALR_SCA_ALWAYS',
-            'MODULE_PAYMENT_PAYPALR_ACCEPT_CARDS',
             'MODULE_PAYMENT_PAYPALR_HANDLING_OT',
             'MODULE_PAYMENT_PAYPALR_INSURANCE_OT',
             'MODULE_PAYMENT_PAYPALR_DISCOUNT_OT',
@@ -2246,13 +2307,21 @@ class paypalr extends base
     {
         global $db;
 
+        // de-register known webhooks
+        if (isset($this->ppr)) {
+            $this->ppr->unsubscribeWebhooks();
+        }
         $db->Execute("DELETE FROM " . TABLE_CONFIGURATION . " WHERE configuration_key LIKE 'MODULE\_PAYMENT\_PAYPALR\_%'");
         $db->Execute("DELETE FROM " . TABLE_CONFIGURATION_LANGUAGE . " WHERE configuration_key LIKE 'MODULE\_PAYMENT\_PAYPALR\_%'");
         // -----
-        // Starting with v1.1.1, removing the payment module includes deleting
-        // its root-directory webhook.
+        // Starting with v1.1.1, removing the payment module includes deleting its root-directory
+        // listener and webhook handlers, and the prior versions' ppr_webhook_main.php handler.
         //
-        unlink(DIR_FS_CATALOG . 'ppr_webhook_main.php');
+        foreach (['ppr_listener.php', 'ppr_webhook.php', 'ppr_webhook_main.php'] as $file) {
+            if (file_exists(DIR_FS_CATALOG . $file)) {
+                unlink(DIR_FS_CATALOG . $file);
+            }
+        }
 
         $this->notify('NOTIFY_PAYMENT_PAYPALR_UNINSTALLED');
     }
@@ -2275,5 +2344,267 @@ class paypalr extends base
                 'paymentalert'
             );
         }
+    }
+    public function getCurrentVersion(): string
+    {
+        return self::CURRENT_VERSION;
+    }
+}
+if (!function_exists('zen_in_guest_checkout')) {
+    /** @since ZC v1.5.6 */
+    function zen_in_guest_checkout(): bool
+    {
+        global $zco_notifier;
+        $in_guest_checkout = false;
+        $zco_notifier->notify('NOTIFY_ZEN_IN_GUEST_CHECKOUT', null, $in_guest_checkout);
+        return (bool)$in_guest_checkout;
+    }
+}
+
+if (!function_exists('zen_cfg_select_multioption_pairs')) {
+    /** @since ZC v2.2.0 */
+    function zen_cfg_select_multioption_pairs(array $choices_array, string $stored_value, string $config_key_name = ''): string
+    {
+        $string = '';
+        $name = (($config_key_name) ? 'configuration[' . $config_key_name . '][]' : 'configuration_value');
+        $chosen_already = explode(", ", $stored_value);
+        foreach ($choices_array as $value) {
+            // Account for cases where an = sign is used to allow key->value pairs where the value is friendly display text
+            $beforeEquals = strstr($value, '=', true);
+            // this entry's checkbox should be pre-selected if the key matches
+            $ticked = (in_array($value, $chosen_already, true) || in_array($beforeEquals, $chosen_already, true));
+            // determine the value to show (the part after the =; if no =, just the whole string)
+            $display_value = strpos($value, '=') !== false ? explode('=', $value, 2)[1] : $value;
+            $string .= '<div class="checkbox"><label>' . zen_draw_checkbox_field($name, $value, $ticked, 'id="' . strtolower($value . '-' . $name) . '"') . $display_value . '</label></div>' . "\n";
+        }
+        $string .= zen_draw_hidden_field($name, '--none--');
+        return $string;
+    }
+}
+
+if (IS_ADMIN_FLAG === true && isset($sniffer)) {
+    // only check db on Admin side
+    if (is_object($sniffer) && $sniffer->field_exists(TABLE_ORDERS_STATUS_HISTORY, 'updated_by') === false) {
+        $db->Execute("ALTER TABLE " . TABLE_ORDERS_STATUS_HISTORY . " ADD updated_by VARCHAR(45) NOT NULL DEFAULT ''");
+    }
+}
+
+if (!function_exists('zen_updated_by_admin')) {
+    /** @since ZC v1.5.6 */
+    function zen_updated_by_admin($admin_id = null)
+    {
+        if (empty($admin_id) && empty($_SESSION['admin_id'])) {
+            return '';
+        }
+        if (empty($admin_id)) {
+            $admin_id = $_SESSION['admin_id'];
+        }
+        $name = zen_get_admin_name($admin_id);
+        return ($name ?? 'Unknown Name') . " [$admin_id]";
+    }
+}
+
+if (!function_exists('zen_get_orders_status_name')) {
+    function zen_get_orders_status_name($orders_status_id, $language_id = '')
+    {
+        global $db;
+
+        if (!$language_id) {
+            $language_id = $_SESSION['languages_id'];
+        }
+        $orders_status = $db->Execute("select orders_status_name
+                                       from " . TABLE_ORDERS_STATUS . "
+                                       where orders_status_id = '" . (int)$orders_status_id . "'
+                                       and language_id = '" . (int)$language_id . "' LIMIT 1");
+        if ($orders_status->EOF) {
+            return '';
+        }
+        return $orders_status->fields['orders_status_name'];
+    }
+}
+
+if (!function_exists('zen_catalog_href_link') && function_exists('zen_href_link')) {
+    function zen_catalog_href_link ($page = '', $parameters = '', $connection = 'NONSSL')
+    {
+        return zen_href_link($page, $parameters, $connection, false);
+    }
+}
+
+if (!function_exists('zen_update_orders_history')) {
+    function zen_update_orders_history($orders_id, $message = '', $updated_by = null, $orders_new_status = -1, $notify_customer = -1, $email_include_message = true, $email_subject = '', $send_extra_emails_to = '', $filename = ''): int
+    {
+        global $osh_sql, $osh_additional_comments;
+
+        // -----
+        // Initialize return value to indicate no change and sanitize various inputs.
+        //
+        $osh_id = -1;
+        $orders_id = (int)$orders_id;
+        $message = (string)$message;
+        $email_subject = (string)$email_subject;
+        $send_extra_emails_to = (string)$send_extra_emails_to;
+    
+        $sql = "SELECT customers_name, customers_email_address, orders_status, date_purchased
+               FROM " . TABLE_ORDERS . "
+              WHERE orders_id = $orders_id
+              LIMIT 1";
+        
+        global $db;
+        if (method_exists($db, 'ExecuteNoCache')) {
+            $osh_info = $db->ExecuteNoCache($sql);
+        } else {
+            $osh_info = $db->Execute($sql);
+        }
+        if ($osh_info->EOF) {
+            $osh_id = -2;
+        } else {
+            // -----
+            // Determine the message to be included in any email(s) sent.  If an observer supplies an additional
+            // message, that text is appended to the message supplied on the function's call.
+            //
+            $message = stripslashes($message);
+            $email_message = '';
+            if ($email_include_message === true) {
+                $email_message = $message;
+                if (empty($osh_additional_comments)) {
+                    $osh_additional_comments = '';
+                }
+                $GLOBALS['zco_notifier']->notify('ZEN_UPDATE_ORDERS_HISTORY_PRE_EMAIL', ['message' => $message], $osh_additional_comments);
+                if (!empty($osh_additional_comments)) {
+                    if (!empty($email_message)) {
+                        $email_message .= "\n\n";
+                    }
+                    $email_message .= (string)$osh_additional_comments;
+                }
+                if (!empty($email_message)) {
+                    $email_message = OSH_EMAIL_TEXT_COMMENTS_UPDATE . $email_message . "\n\n";
+                }
+            }
+    
+            $orders_current_status = $osh_info->fields['orders_status'];
+            $orders_new_status = (int)$orders_new_status;
+            if (($orders_new_status != -1 && $orders_current_status != $orders_new_status) || !empty($email_message)) {
+                if ($orders_new_status == -1) {
+                    $orders_new_status = $orders_current_status;
+                }
+                $GLOBALS['zco_notifier']->notify('ZEN_UPDATE_ORDERS_HISTORY_STATUS_VALUES', ['orders_id' => $orders_id, 'new' => $orders_new_status, 'old' => $orders_current_status]);
+    
+                $GLOBALS['db']->Execute(
+                    "UPDATE " . TABLE_ORDERS . "
+                        SET orders_status = $orders_new_status,
+                            last_modified = now()
+                      WHERE orders_id = $orders_id
+                      LIMIT 1"
+                );
+    
+                // PayPal Trans ID, if any
+                $paypalLookup = $GLOBALS['db']->Execute(
+                    "SELECT *
+                     FROM " . TABLE_PAYPAL . "
+                     WHERE order_id = $orders_id
+                     ORDER BY last_modified DESC, date_added DESC, parent_txn_id DESC, paypal_ipn_id DESC"
+                );
+                $paypal = $paypalLookup->EOF ? [] : $paypalLookup->fields;
+    
+                $notify_customer = ($notify_customer == 1 || $notify_customer == -1 || $notify_customer == -2) ? $notify_customer : 0;
+    
+                if ($notify_customer == 1 || $notify_customer == -2) {
+                    $new_orders_status_name = zen_get_orders_status_name($orders_new_status);
+                    if ($new_orders_status_name === '') {
+                        $new_orders_status_name = 'N/A';
+                    }
+    
+                    if ($orders_new_status != $orders_current_status) {
+                        $status_text = OSH_EMAIL_TEXT_STATUS_UPDATED;
+                        $status_value_text = sprintf(OSH_EMAIL_TEXT_STATUS_CHANGE, zen_get_orders_status_name($orders_current_status), $new_orders_status_name);
+                    } else {
+                        $status_text = OSH_EMAIL_TEXT_STATUS_NO_CHANGE;
+                        $status_value_text = sprintf(OSH_EMAIL_TEXT_STATUS_LABEL, $new_orders_status_name);
+                    }
+    
+                    //send emails
+                    $email_text =
+                        EMAIL_SALUTATION . ' ' . $osh_info->fields['customers_name'] . ', ' . "\n\n" .
+                        STORE_NAME . ' ' . OSH_EMAIL_TEXT_ORDER_NUMBER . ' ' . $orders_id . "\n\n" .
+                        OSH_EMAIL_TEXT_INVOICE_URL . ' ' . zen_catalog_href_link(FILENAME_CATALOG_ACCOUNT_HISTORY_INFO, "order_id=$orders_id", 'SSL') . "\n\n" .
+                        OSH_EMAIL_TEXT_DATE_ORDERED . ' ' . zen_date_long($osh_info->fields['date_purchased']) . "\n\n" .
+                        strip_tags($email_message) .
+                        $status_text . $status_value_text .
+                        OSH_EMAIL_TEXT_STATUS_PLEASE_REPLY;
+
+                    // Add in store specific order message
+                    $email_order_message = defined('EMAIL_ORDER_UPDATE_MESSAGE') ? constant('EMAIL_ORDER_UPDATE_MESSAGE') : '';
+                    $GLOBALS['zco_notifier']->notify('ZEN_UPDATE_ORDERS_HISTORY_SET_ORDER_UPDATE_MESSAGE', $orders_id, $email_order_message);
+                    if (!empty($email_order_message)) {
+                     $email_text .= "\n\n" . $email_order_message . "\n\n";
+                    }
+                    $html_msg['EMAIL_ORDER_UPDATE_MESSAGE'] = $email_order_message;
+
+                    $html_msg['EMAIL_SALUTATION'] = EMAIL_SALUTATION;
+                    $html_msg['EMAIL_CUSTOMERS_NAME']    = $osh_info->fields['customers_name'];
+                    $html_msg['EMAIL_TEXT_ORDER_NUMBER'] = OSH_EMAIL_TEXT_ORDER_NUMBER . ' ' . $orders_id;
+                    $html_msg['EMAIL_TEXT_INVOICE_URL']  = '<a href="' . zen_catalog_href_link(FILENAME_CATALOG_ACCOUNT_HISTORY_INFO, "order_id=$orders_id", 'SSL') .'">' . str_replace(':', '', OSH_EMAIL_TEXT_INVOICE_URL) . '</a>';
+                    $html_msg['EMAIL_TEXT_DATE_ORDERED'] = OSH_EMAIL_TEXT_DATE_ORDERED . ' ' . zen_date_long($osh_info->fields['date_purchased']);
+                    $html_msg['EMAIL_TEXT_STATUS_COMMENTS'] = nl2br($email_message);
+                    $html_msg['EMAIL_TEXT_STATUS_UPDATED'] = str_replace("\n", '', $status_text);
+                    $html_msg['EMAIL_TEXT_STATUS_LABEL'] = str_replace("\n", '', $status_value_text);
+                    $html_msg['EMAIL_TEXT_NEW_STATUS'] = $new_orders_status_name;
+                    $html_msg['EMAIL_TEXT_STATUS_PLEASE_REPLY'] = str_replace("\n", '', OSH_EMAIL_TEXT_STATUS_PLEASE_REPLY);
+                    $html_msg['EMAIL_PAYPAL_TRANSID'] = '';
+
+                    if (empty($email_subject)) {
+                        $email_subject = OSH_EMAIL_TEXT_SUBJECT . ' #' . $orders_id;
+                    }
+
+                    $GLOBALS['zco_notifier']->notify('ZEN_UPDATE_ORDERS_HISTORY_BEFORE_SENDING_CUSTOMER_EMAIL', $orders_id, $email_subject, $email_text, $html_msg, $notify_customer);
+
+                    if ($notify_customer == 1) {
+                        zen_mail($osh_info->fields['customers_name'], $osh_info->fields['customers_email_address'], $email_subject, $email_text, STORE_NAME, EMAIL_FROM, $html_msg, 'order_status', $filename);
+                    }
+
+                    if (!empty($paypal['txn_id'])) {
+                        $email_text .= "\n\n" . ' PayPal Trans ID: ' . $paypal['txn_id'];
+                        $html_msg['EMAIL_PAYPAL_TRANSID'] = $paypal['txn_id'];
+                    }
+
+                    //send extra emails
+                    if (empty($send_extra_emails_to) && (int)SEND_EXTRA_ORDERS_STATUS_ADMIN_EMAILS_TO_STATUS === 1) {
+                        $send_extra_emails_to = (string)SEND_EXTRA_ORDERS_STATUS_ADMIN_EMAILS_TO;
+                    }
+                    if (!empty($send_extra_emails_to)) {
+                        zen_mail('', $send_extra_emails_to, SEND_EXTRA_ORDERS_STATUS_ADMIN_EMAILS_TO_SUBJECT . ' ' . $email_subject, $email_text, STORE_NAME, EMAIL_FROM, $html_msg, 'order_status_extra', $filename);
+                    }
+                }
+
+                if (empty($updated_by)) {
+                    if (IS_ADMIN_FLAG === true && isset($_SESSION['admin_id'])) {
+                        $updated_by = zen_updated_by_admin();
+                    } else if (isset($_SESSION['emp_admin_id'])) {
+                       $updated_by = zen_updated_by_admin($_SESSION['emp_admin_id']);
+                    } elseif (IS_ADMIN_FLAG === false && isset($_SESSION['customer_id'])) {
+                        $updated_by = '';
+                    } else {
+                        $updated_by = 'N/A';
+                    }
+                }
+
+                $osh_sql = [
+                    'orders_id' => $orders_id,
+                    'orders_status_id' => $orders_new_status,
+                    'date_added' => 'now()',
+                    'customer_notified' => $notify_customer,
+                    'comments' => $message,
+                    'updated_by' => $updated_by
+                ];
+
+                $GLOBALS['zco_notifier']->notify('ZEN_UPDATE_ORDERS_HISTORY_BEFORE_INSERT', [], $osh_sql);
+    
+                zen_db_perform (TABLE_ORDERS_STATUS_HISTORY, $osh_sql);
+                $osh_id = $GLOBALS['db']->Insert_ID();
+
+                $GLOBALS['zco_notifier']->notify('ZEN_UPDATE_ORDERS_HISTORY_AFTER_INSERT', $osh_id, $osh_sql, $paypalLookup);
+            }
+        }
+        return $osh_id;
     }
 }

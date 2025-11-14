@@ -3,39 +3,40 @@
  * A class that returns an array of 'current' transactions for a specified order for
  * Cart processing for the PayPal Restful payment module's admin_notifications processing.
  *
- * @copyright Copyright 2023-2024 Zen Cart Development Team
+ * @copyright Copyright 2023-2025 Zen Cart Development Team
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  *
- * Last updated: v1.0.4
+ * Last updated: v1.3.0
  */
 namespace PayPalRestful\Admin;
 
 use PayPalRestful\Admin\Formatters\Messages;
+use PayPalRestful\Admin\Formatters\NullMessages;
 use PayPalRestful\Api\PayPalRestfulApi;
 use PayPalRestful\Common\Helpers;
 use PayPalRestful\Common\Logger;
 
 class GetPayPalOrderTransactions
 {
-    protected string $moduleName;
+    protected $moduleName;
 
-    protected string $moduleVersion;
+    protected $moduleVersion;
 
-    protected int $oID;
+    protected $oID;
 
-    protected PayPalRestfulApi $ppr;
+    protected $ppr;
 
-    protected Logger $log;
+    protected $log;
 
-    protected array $databaseTxns = [];
+    protected $databaseTxns = [];
 
-    protected Messages $messages;
+    protected $messages;
 
-    protected string $paymentType;
+    protected $paymentType;
 
-    protected array $paypalTransactions = [];
+    protected $paypalTransactions = [];
 
-    protected bool $externalTxnAdded = false;
+    protected $externalTxnAdded = false;
 
     public function __construct(string $module_name, string $module_version, int $oID, PayPalRestfulApi $ppr)
     {
@@ -45,7 +46,13 @@ class GetPayPalOrderTransactions
         $this->ppr = $ppr;
 
         $this->log = new Logger();
-        $this->messages = new Messages();
+        if (\IS_ADMIN_FLAG === true) {
+            $this->messages = new Messages();
+        } else {
+            // Use a null-object class to avoid errors where calling messageStack methods
+            // may trigger problems where no messages are actually needed such as webhooks
+            $this->messages = new NullMessages();
+        }
 
         $this->getPayPalDatabaseTransactionsForOrder();
     }
@@ -76,6 +83,10 @@ class GetPayPalOrderTransactions
         return (string)$main_txn[0]['invoice'];
     }
 
+    /**
+     * Update paypal db table with latest updates for this order
+     * by retrieving entire order history from PayPal
+     */
     public function syncPaypalTxns()
     {
         $this->getPayPalUpdates();
@@ -84,7 +95,7 @@ class GetPayPalOrderTransactions
             $this->messages->add(MODULE_PAYMENT_PAYPALR_EXTERNAL_ADDITION, 'warning');
         }
 
-        if ($this->messages->size !== 0) {
+        if (!\property_exists($this->messages, 'size') || $this->messages->size !== 0) {
             $this->getPayPalDatabaseTransactionsForOrder();
         }
     }
@@ -400,5 +411,39 @@ class GetPayPalOrderTransactions
                 AND txn_type = 'CREATE'
               LIMIT 1"
         );
+    }
+
+    /**
+     * Lookup Order ID using TxnID -- mostly used by Webhooks
+     * @return int (0 if no match found)
+     */
+    public static function getOrderIdFromPayPalTxnId(string $txn_id): int
+    {
+        global $db;
+
+        // if blank, skip db call
+        if (empty($txn_id)) {
+            return 0;
+        }
+        // sanitize
+        $txn_id = $db->prepare_input($txn_id);
+
+        $results = $db->ExecuteNoCache(
+            "SELECT *
+               FROM " . TABLE_PAYPAL . "
+              WHERE txn_id = '$txn_id'
+              ORDER BY
+                CASE txn_type
+                    WHEN 'CREATE' THEN -1
+                    WHEN 'AUTHORIZE' THEN 0
+                    WHEN 'CAPTURE' THEN 1
+                    ELSE 2
+                END ASC, date_added ASC"
+        );
+
+        if ($results->EOF) {
+            return 0;
+        }
+        return (int)$results->fields['order_id'];
     }
 }

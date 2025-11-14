@@ -1,23 +1,41 @@
 <?php
 /**
- * Part of the paypalr (PayPal Restful Api) payment module.  This
- * observer-class watches for notifications from the 'order_total' class,
+ * Part of the paypalr (PayPal Restful Api) payment module.
+ * Zen Cart German Specific, US Pay Later Messaging removed
+ * It also watches for notifications from the 'order_total' class,
  * introduced in this (https://github.com/zencart/zencart/pull/6090) Zen Cart PR,
  * to determine an order's overall value and what amounts each order-total
  * module has added/subtracted to the order's overall value.
  *
- * Last updated: v1.0.2
+ * Last updated: v1.3.0
  */
+
+use PayPalRestful\Api\Data\CountryCodes;
+use PayPalRestful\Api\PayPalRestfulApi;
+use PayPalRestful\Zc2Pp\Amount;
+
+require_once DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/pprAutoload.php';
+
 class zcObserverPaypalrestful extends base
 {
-    protected array $lastOrderValues = [];
-    protected array $orderTotalChanges = [];
-    protected bool $freeShippingCoupon = false;
+    protected $lastOrderValues = [];
+    protected $orderTotalChanges = [];
+    protected $freeShippingCoupon = false;
+    
 
     public function __construct()
     {
         // -----
-        // If the paypalr payment-module isn't installed or isn't configurated to be
+        // If loaded via ppr_webhook.php, ensure that the $spider_flag is set so
+        // that application_top.php doesn't try to load the counter.php module which,
+        // depending on the zc version, might choke for the absence of the zcDate class.
+        //
+        global $loaderPrefix, $spider_flag;
+        if ($loaderPrefix === 'webhook') {
+            $spider_flag = true;
+        }
+        // -----
+        // If the paypalr payment-module isn't installed or isn't configured to be
         // enabled, nothing further to do here.
         //
         if (!defined('MODULE_PAYMENT_PAYPALR_STATUS') || MODULE_PAYMENT_PAYPALR_STATUS !== 'True') {
@@ -26,7 +44,7 @@ class zcObserverPaypalrestful extends base
 
         // -----
         // If currently on either the 3-page or OPC checkout-confirmation pages, need to monitor
-        // calls to the order-totals' pre_confirmation_check method.  That method's run on that
+        // calls to the order-totals' pre_confirmation_check method. That method is run on that
         // page prior to paypalr's pre_confirmation_check method.
         //
         // NOTE: The page that's set during the AJAX checkout-payment class is 'index'!
@@ -91,6 +109,8 @@ class zcObserverPaypalrestful extends base
     {
         $coupon_type = $parameters['coupon']['coupon_type'];
         $this->freeShippingCoupon = in_array($coupon_type, ['S', 'E', 'O']);
+
+
     }
 
     // -----
@@ -209,3 +229,30 @@ class zcObserverPaypalrestful extends base
         return $this->freeShippingCoupon;
     }
 }
+
+
+
+
+
+/*****************************/
+// Backward Compatibility for prior to ZC v2.2.0
+if (!function_exists('zen_get_buyable_product_type_handlers')) {
+    /**
+     * Get a list of product page names that identify buyable products.
+     * This allows us to mark a page as containing a product which can
+     * be allowed to add-to-cart or buy-now with various modules.
+     * @since ZC v2.2.0
+     */
+    function zen_get_buyable_product_type_handlers(): array
+    {
+        global $db;
+        $sql = "SELECT type_handler from " . TABLE_PRODUCT_TYPES . " WHERE allow_add_to_cart = 'Y'";
+        $results = $db->Execute($sql);
+        $retVal = [];
+        foreach ($results as $result) {
+            $retVal[] = $result['type_handler'] . '_info';
+        }
+        return $retVal;
+    }
+}
+/*****************************/

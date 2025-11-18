@@ -7,7 +7,7 @@
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2025-11-14 13:49:14Z webchills $
+ * @version $Id: paypalpr.php 2025-11-18 11:10:14Z webchills $
  */
 /**
  * Load the support class' auto-loader.
@@ -1485,8 +1485,9 @@ class paypalr extends base
 
             $this->order_status = (int)MODULE_PAYMENT_PAYPALR_ORDER_PENDING_STATUS_ID;
             $order->info['order_status'] = $this->order_status;
-            $this->orderInfo['admin_alert_needed'] = true;
-
+            // deactivated in 1.3.0 German to avoid useless email notifications
+            //this->orderInfo['admin_alert_needed'] = true;
+            this->orderInfo['admin_alert_needed'] = false;
             $this->log->write("==> paypalr::before_process ($payment_source): Payment status {$payment['status']} received from PayPal; order's status forced to pending.");
         }
 
@@ -2168,7 +2169,7 @@ class paypalr extends base
                ('Transaktionsmodus', 'MODULE_PAYMENT_PAYPALR_TRANSACTION_MODE', 'Wollen Sie die Zahlung nur autorisieren (Auth Only) oder sofort abbuchen (Final Sale)?<br><br>empfohlene Voreinstellung: Final Sale', 43, NOW(), NOW()),
                ('Transaktionswährung', 'MODULE_PAYMENT_PAYPALR_CURRENCY', 'In welcher Währung soll die Bestellung an PayPal gesendet werden?<br>Wenn Sie in Ihrem Shop nur den Euro als Währung verwenden, dann stellen Sie hier auf EURO only.<br>Nur falls Sie mehrere Währungen aktiv haben, stellen Sie auf Selected Currency<br>HINWEIS: Wenn eine nicht unterstützte Währung an PayPal gesendet wird, wird sie automatisch in die <em>Fallback-Währung</em> umgerechnet.<br><b>Voreinstellung: Selected Currency</b>', 43, NOW(), NOW()),
                ('Fallback Währung', 'MODULE_PAYMENT_PAYPALR_CURRENCY_FALLBACK', 'Wenn die <b>Transaktionswährung</b> auf <em>Ausgewählte Währung</em> eingestellt ist, welche Währung soll dann als Ausweichwährung verwendet werden, wenn die vom Kunden ausgewählte Währung von PayPal nicht unterstützt wird?<br><b>Empfohlene Voreinstellung: EUR</b>', 43, NOW(), NOW()),
-               ('Kreditkarten akzeptieren?', 'MODULE_PAYMENT_PAYPALR_ACCEPT_CARDS', 'Soll das Zahlungsmodul Kreditkartenzahlungen akzeptieren? Dann stellen Sie hier auf true.<br>Wenn Sie <var>Live</var> Transaktionen durchführen, muss Ihr Shop durchgehend SSL verwenden, damit die Kartenzahlungen akzeptiert werden!<br><br>Wenn Ihr Shop One-Page Checkout verwendet, können Sie Kreditkartenzahlungen auf Kunden beschränken, die ein Kundenkonto im Shop haben (Account-Holders Only).', 43, NOW(), NOW()),
+               ('Kreditkarten akzeptieren?', 'MODULE_PAYMENT_PAYPALR_ACCEPT_CARDS', 'Soll das Zahlungsmodul Kreditkartenzahlungen akzeptieren? Dann stellen Sie hier auf true.<br>Wenn Sie <var>Live</var> Transaktionen durchführen, muss Ihr Shop durchgehend SSL verwenden, damit die Kartenzahlungen akzeptiert werden!<br><br>Wenn Ihr Shop das Modul One-Page Checkout verwendet, können Sie Kreditkartenzahlungen auf Kunden beschränken, die ein Kundenkonto im Shop haben (Account-Holders Only).', 43, NOW(), NOW()),
                ('Werden zusätzliche <var>Bearbeitungsgebühr</var> Module verwendet?', 'MODULE_PAYMENT_PAYPALR_HANDLING_OT', 'Geben Sie mit einer durch Kommata getrennten Liste (Leerzeichen dazwischen sind OK) alle unter Module > Zusammenfassung verwendeten Module <em>außer</em> <code>ot_loworderfee</code> an, die eine <em>Bearbeitungsgebühr</em> zu einer Bestellung hinzufügen. Belassen Sie die Einstellung als leere Zeichenkette, wenn es keine gibt (Standardeinstellung).', 43, NOW(), NOW()),
                ('Werden zusätzliche <var>Versicherungsgebühr</var> Module verwendet?', 'MODULE_PAYMENT_PAYPALR_INSURANCE_OT', 'Geben Sie mit einer durch Kommata getrennten Liste (Leerzeichen dazwischen sind OK) alle unter Module > Zusammenfassung verwendeten Module an, die eine <em>Versicherungsgebühr</em> zu einer Bestellung hinzufügen. Belassen Sie die Einstellung als leere Zeichenfolge, wenn es keine gibt (Standardeinstellung).', 43, NOW(), NOW()),
                ('Werden zusätzliche <var>Rabatt</var> Module verwendet?', 'MODULE_PAYMENT_PAYPALR_DISCOUNT_OT', 'Geben Sie mit einer durch Kommata getrennten Liste (Leerzeichen dazwischen sind OK) alle unter Module > Zusammenfassung verwendeten Module an <em>außer</em> <code>ot_coupon</code>, <code>ot_gv</code> und <code>ot_group_pricing</code> &mdash; die einen <em>Rabatt</em> zu einer Bestellung hinzufügen. Belassen Sie die Einstellung als leere Zeichenkette, wenn es keine gibt (Standard).', 43, NOW(), NOW()),

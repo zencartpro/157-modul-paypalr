@@ -1,12 +1,13 @@
 <?php
 /**
- * PayPal REST API Webhooks
+ * paypalr.php payment module class for PayPal RESTful API payment method in Zen Cart German 1.5.7j
+ * Zen Cart German Specific (zencartpro adaptations)
  *
- * @copyright Copyright 2023-2025 Zen Cart Development Team
- * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: DrByte June 2025 $
- *
- * Last updated: v1.3.0
+ * @copyright Copyright 2003-2025 Zen Cart Development Team
+ * Zen Cart German Version - www.zen-cart-pro.at
+ * @copyright Portions Copyright 2003 osCommerce
+ * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
+ * @version $Id: PaymentCaptureComleted.php 2025-11-20 13:15:14Z webchills $
  */
 
 namespace PayPalRestful\Webhooks\Events;
@@ -76,11 +77,11 @@ class PaymentCaptureCompleted extends WebhookHandlerContract
         // Save update without notifying customer
         zen_update_orders_history($oID, $comments, 'webhook', $status, 0);
 
-        // Notify merchant via email
+        // Notify merchant via email - deactivated in 1.3.1 German to avoid useless email notifications
         zen_update_orders_history($oID, $admin_message, 'webhook', -1, -2);
-        $this->paymentModule->sendAlertEmail(MODULE_PAYMENT_PAYPALR_ALERT_SUBJECT_ORDER_ATTN, $comments . "\n" .
-            sprintf(MODULE_PAYMENT_PAYPALR_ALERT_ORDER_CREATION, $oID, $this->data['resource']['status'])
-        );
+//        $this->paymentModule->sendAlertEmail(MODULE_PAYMENT_PAYPALR_ALERT_SUBJECT_ORDER_ATTN, $comments . "\n" .
+//            sprintf(MODULE_PAYMENT_PAYPALR_ALERT_ORDER_CREATION, $oID, $this->data['resource']['status'])
+//        );
 
         // @TODO - is this risking duplication if the order was already captured in-real-time?
         // If funds have been captured, fire a notification so that sites that

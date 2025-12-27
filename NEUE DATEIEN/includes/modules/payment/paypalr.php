@@ -7,7 +7,7 @@
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2025-11-19 07:56:14Z webchills $
+ * @version $Id: paypalpr.php 2025-12-27 17:53:14Z webchills $
  */
 /**
  * Load the support class' auto-loader.
@@ -34,7 +34,7 @@ use PayPalRestful\Zc2Pp\CreatePayPalOrderRequest;
  */
 class paypalr extends base
 {
-    const CURRENT_VERSION = '1.3.0';
+    const CURRENT_VERSION = '1.3.3';
 
     const REDIRECT_LISTENER = HTTP_SERVER . DIR_WS_CATALOG . 'ppr_listener.php';
 

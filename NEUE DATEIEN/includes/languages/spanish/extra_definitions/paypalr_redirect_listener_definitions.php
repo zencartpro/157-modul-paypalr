@@ -4,4 +4,8 @@ define('EMAIL_TEXT_ORDER_CUSTOMER_NEUTRAL', 'Buenos días ');
 define('EMAIL_TEXT_ORDER_CUSTOMER_GENDER_MALE', 'Estimado señor ');
 define('EMAIL_TEXT_ORDER_CUSTOMER_GENDER_FEMALE', 'Estimada señora ');
 define('OSH_EMAIL_TEXT_ORDER_CUSTOMER_NEUTRAL', 'Buenos días ');
+define('OSH_EMAIL_TEXT_ORDER_CUSTOMER_GENDER_MALE', 'Estimado señor ');
+define('OSH_EMAIL_TEXT_ORDER_CUSTOMER_GENDER_FEMALE', 'Estimada señora: ');
 define('OSH_EMAIL_TEXT_UPDATEINFO', 'Le informamos sobre el estado de su pedido en ');
+define('OSH_EMAIL_TEXT_COWOA_URL', 'Ver el estado del pedido:'); 
+define('OSH_EMAIL_TEXT_COWOA_URL_CLICK', 'Para comprobar el estado de su pedido, haga clic aquí.');

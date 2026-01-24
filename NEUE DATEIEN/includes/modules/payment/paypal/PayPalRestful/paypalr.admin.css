@@ -6,6 +6,12 @@
 .ppr-table caption small {
     font-size: 50%;
 }
+.control-label{
+	text-align:left !important;
+	float:left !important;
+	 padding-top:12px;
+    font-size:98%;
+}
 tr.ppr-payments {
     font-weight: bold;
 }
@@ -19,7 +25,12 @@ tr.ppr-payments {
     padding-top: 1vh;
 }
 .ppr-pr-0 {
-    padding-right: 0;
+    padding-top:12px;
+    font-size:98%;
+    white-space: nowrap;
+    min-width:180px;
+    float:left!important;
+    text-align:left!important:
 }
 .ppr-modal textarea {
     margin: 0.5vh 0;

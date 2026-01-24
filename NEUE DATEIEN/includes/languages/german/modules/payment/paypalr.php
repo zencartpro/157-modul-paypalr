@@ -1,11 +1,11 @@
 <?php
 /**
 * Zen Cart German Specific
-* @copyright Copyright 2003-2025 Zen Cart Development Team
+* @copyright Copyright 2003-2026 Zen Cart Development Team
 * Zen Cart German Version - www.zen-cart-pro.at
 * @copyright Portions Copyright 2003 osCommerce
 * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
-* @version $Id: paypalr.php 2025-11-14 14:00:24Z webchills $
+* @version $Id: paypalr.php 2026-01-24 14:00:24Z webchills $
 */
 
 define('MODULE_PAYMENT_PAYPALR_TEXT_TITLE', 'PayPal Checkout');
@@ -236,7 +236,7 @@ define('MODULE_PAYMENT_PAYPALR_REFUND_NOTE1', 'Bei einer <em>vollständigen</em>
 define('MODULE_PAYMENT_PAYPALR_REFUND_NOTE2', 'Bei einer <em>teilweisen</em> Rückerstattung wird ein Teil der eingezogenen Zahlung erstattet.');
 define('MODULE_PAYMENT_PAYPALR_REFUND_NOTE3', 'Sie können mehrere <em>teilweise</em> Rückerstattungen bis zur Höhe des verbleibenden nicht erstatteten Betrags vornehmen.');
 define('MODULE_PAYMENT_PAYPALR_REFUND_CAPTURE_ID', 'Capture Txn Id:');
-define('MODULE_PAYMENT_PAYPALR_REMAINING_TO_REFUND', 'Verbleibender Rückerstattungsbetrag:');
+define('MODULE_PAYMENT_PAYPALR_REMAINING_TO_REFUND', 'Verbleibender Betrag:');
 define('MODULE_PAYMENT_PAYPALR_REFUND_AMOUNT', 'Zu erstattender Betrag:');
 define('MODULE_PAYMENT_PAYPALR_REFUND_FULL', 'Vollständige Rückerstattung?');
 define('MODULE_PAYMENT_PAYPALR_REFUND_DEFAULT_MESSAGE', 'Rückerstattung durch Shopinhaber');

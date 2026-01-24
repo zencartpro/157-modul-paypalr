@@ -7,10 +7,15 @@ Hinweis: Freigegebene getestete Versionen für den Einsatz in Livesystemen aussc
 Mit diesem Modul wird Zahlung via PayPal Checkout über die neue PayPal REST API im Shop integriert.
 * Optional kann auch Kreditkartenzahlung via PayPal aktiviert werden, dazu ist für den Kunden kein PayPal Konto erforderlich
 * Dieses Modul löst das bisherige PayPal Express Modul (paypalwpp) der deutschen Zen Cart Version ab, da PayPal die alte von diesem Modul verwendete NVP/SOAP API abschalten wird.
-* Ein "Login mit PayPal" über einen PayPal Express Button im Warenkorb wird von diesem Modul nicht unterstützt, PayPal wird ganz normal wie andere Zahlungsarten auch bei der Auswahl der Zahlungsarten im Checkout angeboten.
+* Ein "Login mit PayPal" über einen PayPal Express Button im Warenkorb wird von diesem Modul derzeit nicht unterstützt, PayPal wird ganz normal wie andere Zahlungsarten auch bei der Auswahl der Zahlungsarten im Checkout angeboten.
 * Für die Bestellung wird als Lieferadresse die vom Kunden im Shop angegebene Lieferadresse übergeben, es gibt daher keine Notwendigkeit mehr, den Kunden nach der Rückleitung von PayPal erneut nach seiner Lieferadresse zu fragen wie das bisher vom paypalwpp Modul der deutschen Zen Cart Version gehandhabt wurde.
-* Dieses Modul unterstützt rein PayPal Wallet und Kreditkarte via PayPal.
+* Dieses Modul unterstützt derzeit rein PayPal Wallet und Kreditkarte via PayPal.
 * Apple Pay, Google Pay oder andere Zahlungsarten sind nicht enthalten.
+
+# Credits
+* Dieses Modul ist eine Anpassung des Moduls PayPal RESTful API Payment Module  von lat9 für die deutsche Zen Cart Version 1.5.7j 
+* Grundlage war das entsprechende Github Repository:
+* https://github.com/lat9/paypalr
 
 # Voraussetzung
 * Seit Version 1.3.0 setzt dieses Modul folgendes Update voraus:

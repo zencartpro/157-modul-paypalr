@@ -3,11 +3,11 @@
  * paypalwpp.php payment module class for PayPal Express Checkout payment method
  * Zen Cart German Specific (zencartpro adaptations / 158 code in 157)
  *
- * @copyright Copyright 2003-2024 Zen Cart Development Team
+ * @copyright Copyright 2003-2026 Zen Cart Development Team
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalwpp.php for paypalr 2025-06-07 18:05:14Z webchills $
+ * @version $Id: paypalwpp.php for paypalr 2026-04-04 16:05:14Z webchills $
  */
 /**
  * load the communications layer code
@@ -486,7 +486,7 @@ if (false) { // disabled until clarification is received about coupons in PayPal
       $this->transactiontype = $response[$this->infoPrefix . 'TRANSACTIONTYPE'];
       $this->payment_time = urldecode($response[$this->infoPrefix . 'ORDERTIME']);
       $this->feeamt = empty($response[$this->infoPrefix . 'FEEAMT']) ? 0 : urldecode($response[$this->infoPrefix . 'FEEAMT']);
-      $this->taxamt = urldecode($response[$this->infoPrefix . 'TAXAMT']);
+      $this->taxamt = urldecode($response[$this->infoPrefix . 'TAXAMT'] ?? '');
       $this->pendingreason = $response[$this->infoPrefix . 'PENDINGREASON'];
       $this->reasoncode = $response[$this->infoPrefix . 'REASONCODE'];
       $this->numitems = count($order->products);
@@ -700,7 +700,7 @@ if (false) { // disabled until clarification is received about coupons in PayPal
 
     $db->Execute("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) VALUES ('Fraud Mgmt Filters - FMF', 'MODULE_PAYMENT_PAYPALWPP_EC_RETURN_FMF_DETAILS', 'No', 'If you have enabled FMF support in your PayPal account and wish to utilize it in your transactions, set this to yes. Otherwise, leave it at No.', '6', '25','zen_cfg_select_option(array(\'No\', \'Yes\'), ', now())");
     $db->Execute("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) VALUES ('API Signature -- Username', 'MODULE_PAYMENT_PAYPALWPP_APIUSERNAME', '', 'The API Username from your PayPal API Signature settings under *API Access*. This value typically looks like an email address and is case-sensitive.', '6', '25', now())");
-    $db->Execute("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added, set_function, use_function) VALUES ('API Signature -- Password', 'MODULE_PAYMENT_PAYPALWPP_APIPASSWORD', '', 'The API Password from your PayPal API Signature settings under *API Access*. This value is a 16-character code and is case-sensitive.', '6', '25', now(), 'zen_cfg_password_input(', 'zen_cfg_password_display')");
+    $db->Execute("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added, set_function, use_function) values ('API Signature -- Password', 'MODULE_PAYMENT_PAYPALWPP_APIPASSWORD', '', 'The API Password from your PayPal API Signature settings under *API Access*. This value is a 16-character code and is case-sensitive.', '6', '25', now(), '', 'zen_cfg_password_display')");
     $db->Execute("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added, set_function, use_function) VALUES ('API Signature -- Signature Code', 'MODULE_PAYMENT_PAYPALWPP_APISIGNATURE', '', 'The API Signature from your PayPal API Signature settings under *API Access*. This value is a 56-character code, and is case-sensitive.', '6', '25', now(), '', 'zen_cfg_password_display')");
 
     $db->Execute("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) VALUES ('PAYFLOW: User', 'MODULE_PAYMENT_PAYPALWPP_PFUSER', '', 'If you set up one or more additional users on the account, this value is the ID of the user authorized to process transactions. Otherwise it should be the same value as VENDOR. This value is case-sensitive.', '6', '25', now())");
@@ -1942,7 +1942,7 @@ if (false) { // disabled until clarification is received about coupons in PayPal
         'ship_country_code' => urldecode($response[$this->requestPrefix . 'SHIPTOCOUNTRYCODE']),
         'ship_address_status' => (empty($response[$this->requestPrefix . 'ADDRESSSTATUS'])) ? 'NONE' : urldecode($response[$this->requestPrefix . 'ADDRESSSTATUS']),
         'ship_phone' => urldecode($response[$this->requestPrefix . 'SHIPTOPHONENUM'] != '' ? $response[$this->requestPrefix . 'SHIPTOPHONENUM'] : $response['PHONENUM']),
-        'order_comment' => (isset($response['NOTE'], $response[$this->requestPrefix . 'NOTETEXT']) ? urldecode($response['NOTE']) . ' ' . urldecode($response[$this->requestPrefix . 'NOTETEXT']) : ''),
+        'order_comment' => (isset($response['NOTE']) && isset($response[$this->requestPrefix . 'NOTETEXT']) ? urldecode($response['NOTE']) . ' ' . urldecode($response[$this->requestPrefix . 'NOTETEXT']) : ''),
     ];
 
 //    if (strtoupper($response['ADDRESSSTATUS']) == 'NONE' || !isset($response['SHIPTOSTREET']) || $response['SHIPTOSTREET'] == '') {
@@ -1957,16 +1957,15 @@ if (false) { // disabled until clarification is received about coupons in PayPal
       if ($response[$this->requestPrefix . 'SHIPTOSTATE'] == 'NF') $response[$this->requestPrefix . 'SHIPTOSTATE'] = 'NL';
 
       // process address details supplied
-    $step2_shipto = [
-        'ship_name' => urldecode($response[$this->requestPrefix . 'SHIPTONAME']),
-        'ship_street_1' => urldecode($response[$this->requestPrefix . 'SHIPTOSTREET']),
-        'ship_street_2' => urldecode($response[$this->requestPrefix . 'SHIPTOSTREET2']),
-        'ship_city' => urldecode($response[$this->requestPrefix . 'SHIPTOCITY']),
-        'ship_state' => (($response[$this->requestPrefix . 'SHIPTOSTATE'] ?? '') !== '') ? urldecode($response[$this->requestPrefix . 'SHIPTOSTATE']) : urldecode($response[$this->requestPrefix . 'SHIPTOCITY']),
-        'ship_postal_code' => urldecode($response[$this->requestPrefix . 'SHIPTOZIP']),
-        'ship_country_code' => urldecode($response[$this->requestPrefix . 'SHIPTOCOUNTRYCODE']),
-        'ship_country_name' => urldecode($response['SHIPTOCOUNTRY'] ?? $response['SHIPTOCOUNTRYNAME'] ?? ''),
-    ];
+      $step2_shipto = array('ship_name'     => urldecode($response[$this->requestPrefix . 'SHIPTONAME']),
+                            'ship_street_1' => urldecode($response[$this->requestPrefix . 'SHIPTOSTREET']),
+                            'ship_street_2' => urldecode($response[$this->requestPrefix . 'SHIPTOSTREET2']),
+                            'ship_city'     => urldecode($response[$this->requestPrefix . 'SHIPTOCITY']),
+                            'ship_state'    => (isset($response[$this->requestPrefix . 'SHIPTOSTATE']) && $response[$this->requestPrefix . 'SHIPTOSTATE'] !='' ? urldecode($response[$this->requestPrefix . 'SHIPTOSTATE']) : urldecode($response[$this->requestPrefix . 'SHIPTOCITY'])),
+                            'ship_postal_code' => urldecode($response[$this->requestPrefix . 'SHIPTOZIP']),
+                            'ship_country_code'  => urldecode($response[$this->requestPrefix . 'SHIPTOCOUNTRYCODE']),
+                            'ship_country_name'  => (isset($response['SHIPTOCOUNTRY']) ? urldecode($response['SHIPTOCOUNTRY']) : (isset($response['SHIPTOCOUNTRYNAME']) ? urldecode($response['SHIPTOCOUNTRYNAME']) : '')));
+//    }
 
     // reset all previously-selected shipping choices, because cart contents may have been changed
     if ((isset($response['SHIPPINGCALCULATIONMODE']) && $response['SHIPPINGCALCULATIONMODE'] != 'Callback') && (!(isset($_SESSION['paypal_ec_markflow']) && $_SESSION['paypal_ec_markflow'] == 1))) unset($_SESSION['shipping']);
@@ -1976,8 +1975,10 @@ if (false) { // disabled until clarification is received about coupons in PayPal
     if (!isset($order) || !isset($order->info) || !is_array($order->info) || !zen_not_null($order)) {
       $this->zcLog('ec_step2 ', 'Re-instantiating $order object.');
       // init new order object
-      if (!class_exists('order')) require(DIR_WS_CLASSES . 'order.php');
-      $order = new order;
+        if (!class_exists('order')) {
+            require DIR_WS_CLASSES . 'order.php';
+        }
+        $order = new order();
 
         // load the selected shipping module so that shipping taxes can be assessed
         if (isset($_SESSION['shipping'])) {
@@ -1987,15 +1988,19 @@ if (false) { // disabled until clarification is received about coupons in PayPal
             $shipping_modules = new shipping($_SESSION['shipping']);
         }
 
-      // load OT modules so that discounts and taxes can be assessed
-      if (!class_exists('order_total')) require(DIR_WS_CLASSES . 'order_total.php');
-      $order_total_modules = new order_total;
-      $order_totals = $order_total_modules->pre_confirmation_check();
-      $order_totals = $order_total_modules->process();
-      $this->zcLog('ec_step2 ', 'Instantiated $order object contents: ' . print_r($order, true));
+        // load OT modules so that discounts and taxes can be assessed
+        if (!class_exists('order_total')) {
+            require DIR_WS_CLASSES . 'order_total.php';
+        }
+        $order_total_modules = new order_total();
+        $order_totals = $order_total_modules->pre_confirmation_check();
+        $order_totals = $order_total_modules->process();
+        $this->zcLog('ec_step2 ', 'Instantiated $order object contents: ' . print_r($order, true));
     }
 
-    if ($order->info['total'] < 0.01 && urldecode($response[$this->requestPrefix . 'AMT']) > 0) $order->info['total'] = urldecode($response[$this->requestPrefix . 'AMT']);
+    if ($order->info['total'] < 0.01 && urldecode($response[$this->requestPrefix . 'AMT']) > 0) {
+        $order->info['total'] = urldecode($response[$this->requestPrefix . 'AMT']);
+    }
     //$this->zcLog('ec_step2 - processed info', print_r(array_merge($step2_payerinfo, $step2_shipto), true));
 
     // send data off to build account, log in, set addresses, place order
@@ -3010,12 +3015,12 @@ if (false) { // disabled until clarification is received about coupons in PayPal
             }
       }
     }
-    /** Handle unilateral **/
+    /* Handle unilateral **/
     if (!empty($response['RESULT']) && $response['RESULT'] == 'Unauthorized: Unilateral') {
       $errorText = $response['RESULT'] . MODULE_PAYMENT_PAYPALWPP_TEXT_UNILATERAL;
       $messageStack->add_session($errorText, 'error');
     }
-    /** Handle FMF Scenarios **/
+    /* Handle FMF Scenarios **/
       $response['L_ERRORCODE0'] = empty($response['L_ERRORCODE0']) ? 0 : $response['L_ERRORCODE0'];
       $response['L_LONGMESSAGE2'] = empty($response['L_LONGMESSAGE2']) ? '' : $response['L_LONGMESSAGE2'];
     if (in_array($operation, array('DoExpressCheckoutPayment', 'DoDirectPayment'))
@@ -3072,7 +3077,18 @@ if (false) { // disabled until clarification is received about coupons in PayPal
           if ($response['L_ERRORCODE0'] == 10736) $errorText = MODULE_PAYMENT_PAYPALWPP_TEXT_ADDR_ERROR;
           if ($response['L_ERRORCODE0'] == 10752) $errorText = MODULE_PAYMENT_PAYPALWPP_TEXT_DECLINED;
 
-
+          // More optional response elements; initialize them to prevent follow-on PHP notices.
+          $response_optional = [
+            'L_ERRORCODE1',
+            'L_SHORTMESSAGE1',
+            'L_LONGMESSAGE1',
+            'L_ERRORCODE2',
+            'L_SHORTMESSAGE2',
+            'L_LONGMESSAGE2',
+          ];
+          foreach ($response_optional as $optional) {
+            $response[$optional] ??= '';
+          }
           $detailedMessage = ($errorText == MODULE_PAYMENT_PAYPALWPP_TEXT_GEN_ERROR || (int)trim($errorNum) > 0 || $this->enableDebugging || $response['CURL_ERRORS'] != '' || $this->emailAlerts) ? $errorNum . ' ' . urldecode(' ' . $response['L_SHORTMESSAGE0'] . ' - ' . $response['L_LONGMESSAGE0'] . (isset($response['RESPMSG']) ? ' ' . $response['RESPMSG'] : '') . ' ' . $response['CURL_ERRORS']) : '';
           $detailedEmailMessage = ($detailedMessage == '') ? '' : $errorInfo . MODULE_PAYMENT_PAYPALWPP_TEXT_EMAIL_ERROR_MESSAGE . urldecode($response['L_ERRORCODE0'] . "\n" . $response['L_SHORTMESSAGE0'] . "\n" . $response['L_LONGMESSAGE0'] . $response['L_ERRORCODE1'] . "\n" . $response['L_SHORTMESSAGE1'] . "\n" . $response['L_LONGMESSAGE1'] . $response['L_ERRORCODE2'] . "\n" . $response['L_SHORTMESSAGE2'] . "\n" . $response['L_LONGMESSAGE2'] . ($response['CURL_ERRORS'] != '' ? "\n" . $response['CURL_ERRORS'] : '') . "\n\n" . 'Zen Cart message: ' . $errorText);
           if (!isset($response['L_ERRORCODE0']) && isset($response['RESULT'])) $detailedEmailMessage .= "\n\n" . print_r($response, TRUE);

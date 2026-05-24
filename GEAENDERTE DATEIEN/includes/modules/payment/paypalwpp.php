@@ -7,7 +7,7 @@
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalwpp.php for paypalr 2026-04-04 16:05:14Z webchills $
+ * @version $Id: paypalwpp.php for paypalr 2026-05-24 09:05:14Z webchills $
  */
 /**
  * load the communications layer code

@@ -7,7 +7,7 @@
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2026-03-18 14:30:14Z webchills $
+ * @version $Id: paypalpr.php 2026-05-24 09:11:14Z webchills $
  */
 /**
  * Load the support class' auto-loader.
@@ -603,9 +603,9 @@ class paypalr extends base
             global $current_page;
             $use_saved_credentials = (IS_ADMIN_FLAG === false || $current_page === FILENAME_MODULES);
             $this->log->write("validateCredentials: Checking ($use_saved_credentials).", true, 'before');
-            if ($this->ppr->validatePayPalCredentials($use_saved_credentials) === false) {
-                $error_message = sprintf(MODULE_PAYMENT_PAYPALR_ERROR_INVALID_CREDS, MODULE_PAYMENT_PAYPALR_SERVER);
-            }
+            //if ($this->ppr->validatePayPalCredentials($use_saved_credentials) === false) {
+                $error_message = '';
+            //}
             $this->log->write('', false, 'after');
         }
 

@@ -13,15 +13,13 @@ Mit diesem Modul wird Zahlung via PayPal Checkout über die neue PayPal REST API
 * Apple Pay, Google Pay oder andere Zahlungsarten sind nicht enthalten.
 
 # Credits
-* Dieses Modul ist eine Anpassung des Moduls PayPal RESTful API Payment Module  von lat9 für die deutsche Zen Cart Version 1.5.7j 
+* Dieses Modul ist eine Anpassung des Moduls PayPal RESTful API Payment Module  von lat9 für die deutsche Zen Cart Version 1.5.7k 
 * Grundlage war das entsprechende Github Repository:
 * https://github.com/lat9/paypalr
 
 # Voraussetzung
-* Seit Version 1.3.0 setzt dieses Modul folgendes Update voraus:
-* Plugin Manager Update 1.2.0 für Zen Cart 1.5.7j deutsch
-* https://www.zen-cart-pro.at/knowledgebase/plugin-manager-update-fuer-zen-cart-1-5-7j-deutsch/
-* Stellen Sie sicher, dass Sie Ihren 1.5.7j Shop mit diesem Update aktualisiert haben, bevor Sie Version 1.3.0 des paypalr Moduls installieren
+* Dieses Modul setzt 1.5.7k deutsch voraus
+* Stellen Sie sicher, dass Sie Ihren Shop auf 1.5.7k aktualisiert haben, bevor Sie das paypalr Modul installieren
 
 # Features
 * Zahlungen können nur autorisiert oder sofort eingezogen werden.

@@ -1,20 +1,21 @@
 <?php
 /**
  * Part of the paypalr (PayPal Restful Api) payment module.
+ * This observer class handles the JS SDK integration logic.
  * Zen Cart German Specific, US Pay Later Messaging removed
  * It also watches for notifications from the 'order_total' class,
  * introduced in this (https://github.com/zencart/zencart/pull/6090) Zen Cart PR,
  * to determine an order's overall value and what amounts each order-total
  * module has added/subtracted to the order's overall value.
  *
- * Last updated: v1.3.0
+ * Last updated: v1.3.5
  */
 
 use PayPalRestful\Api\Data\CountryCodes;
 use PayPalRestful\Api\PayPalRestfulApi;
 use PayPalRestful\Zc2Pp\Amount;
 
-require_once DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/pprAutoload.php';
+
 
 class zcObserverPaypalrestful extends base
 {
@@ -25,6 +26,12 @@ class zcObserverPaypalrestful extends base
 
     public function __construct()
     {
+        // -----
+        // 1. Identify the full file-system name of the 'base' payment module.
+        // 2. Load the payment-module's class auto-loader.
+        //
+        define('FILENAME_PAYPALR_MODULE', DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypalr.php');
+        require_once DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/pprAutoload.php';
         // -----
         // If loaded via ppr_webhook.php, ensure that the $spider_flag is set so
         // that application_top.php doesn't try to load the counter.php module which,

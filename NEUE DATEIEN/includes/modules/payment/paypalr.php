@@ -3,17 +3,14 @@
  * paypalr.php payment module class for PayPal RESTful API payment method in Zen Cart German 1.5.7j
  * Zen Cart German Specific (zencartpro adaptations)
  *
- * @copyright Copyright 2003-2025 Zen Cart Development Team
+ * @copyright Copyright 2003-2026 Zen Cart Development Team
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2026-05-24 09:11:14Z webchills $
+ * @version $Id: paypalpr.php 2026-06-03 09:11:14Z webchills $
+ *
+ * Last updated: v1.3.5
  */
-/**
- * Load the support class' auto-loader.
- */
-require_once DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/pprAutoload.php';
-
 use PayPalRestful\Admin\AdminMain;
 use PayPalRestful\Admin\DoAuthorization;
 use PayPalRestful\Admin\DoCapture;
@@ -34,7 +31,7 @@ use PayPalRestful\Zc2Pp\CreatePayPalOrderRequest;
  */
 class paypalr extends base
 {
-    const CURRENT_VERSION = '1.3.4';
+    const CURRENT_VERSION = '1.3.5';
 
     const REDIRECT_LISTENER = HTTP_SERVER . DIR_WS_CATALOG . 'ppr_listener.php';
 
@@ -465,14 +462,6 @@ class paypalr extends base
                     );
 		    
 	
-
-
-                    // -----
-                    // Starting with v1.2.0, installing the payment module includes creating
-                    // its root-directory listeners/handlers from a copy within the module's
-                    // storefront includes directory.
-                    //
-                    $this->manageRootDirectoryFiles();
 
                 /* falls through */
                 default:
@@ -1823,7 +1812,7 @@ class paypalr extends base
 
     protected function obfuscateCcNumber(string $cc_number): string
     {
-        return substr($cc_number, 0, 4) . str_repeat('X', (strlen($cc_number) - 8)) . substr($cc_number, -4);
+        return substr($cc_number, 0, 6) . str_repeat('X', (strlen($cc_number) - 10)) . substr($cc_number, -4);
     }
 
     /**
@@ -2243,13 +2232,6 @@ class paypalr extends base
                    MODIFY exchange_rate decimal(15,6) default NULL"
             );
         }
-
-        // -----
-        // Starting with v1.2.0, installing the payment module includes creating
-        // its root-directory listeners/handlers from a copy within the module's
-        // storefront includes directory.
-        //
-        $this->manageRootDirectoryFiles();
 
         // -----
         // Define the module's current version so that the tableCheckup method

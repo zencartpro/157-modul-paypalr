@@ -5,8 +5,8 @@
  * @copyright Copyright 2023-2025 Zen Cart Development Team
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: DrByte June 2025 $
- * modified for Zen Cart German 1.5.7j - 2025-10-28 webchills
- * Last updated: v1.3.0
+ * modified for Zen Cart German 1.5.7k - 2026-07-03 webchills
+ * Last updated: v1.3.6
  */
 
 namespace PayPalRestful\Webhooks\Events;

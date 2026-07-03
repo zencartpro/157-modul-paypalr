@@ -2,13 +2,12 @@
 /**
  * Part of the paypalr (PayPal Restful Api) payment module.
  * This observer class handles the JS SDK integration logic.
- * Zen Cart German Specific, US Pay Later Messaging removed
  * It also watches for notifications from the 'order_total' class,
  * introduced in this (https://github.com/zencart/zencart/pull/6090) Zen Cart PR,
  * to determine an order's overall value and what amounts each order-total
  * module has added/subtracted to the order's overall value.
  *
- * Last updated: v1.3.5
+ * Last updated: v1.3.6
  */
 
 use PayPalRestful\Api\Data\CountryCodes;
@@ -116,7 +115,7 @@ class zcObserverPaypalrestful extends base
     {
         $coupon_type = $parameters['coupon']['coupon_type'];
         $this->freeShippingCoupon = in_array($coupon_type, ['S', 'E', 'O']);
-
+    
 
     }
 
@@ -235,6 +234,7 @@ class zcObserverPaypalrestful extends base
     {
         return $this->freeShippingCoupon;
     }
+
 }
 
 

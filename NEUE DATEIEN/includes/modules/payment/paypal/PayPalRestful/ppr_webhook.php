@@ -2,11 +2,11 @@
 /**
  * Controller for incoming subscribed PayPal Webhook notifications
  *
- * @copyright Copyright 2003-2025 Zen Cart Development Team
+ * @copyright Copyright 2003-2026 Zen Cart Development Team
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: DrByte June 2025 $
  *
- * Last updated: v1.2.0
+ * Last updated: v1.3.6
  *
  * This webhook handler must listen on HTTPS port 443.
  * For webhook message deliveries to be successful, the handler must respond with an HTTP 2xx success status every time a webhook is posted.
@@ -25,14 +25,22 @@
 /**
  * Set supporting application_top parameters, and boot up
  */
+// Prevent stack traces / filesystem paths from reaching the unauthenticated caller.
+ini_set('display_errors', '0');
 $loaderPrefix = 'webhook';
 require 'includes/application_top.php';
 $current_page_base = 'ppr_webhook';
-require DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/paypal/pprAutoload.php';
 
 // call the controller class, which will dispatch as needed, if validation passes
-$controller = new PayPalRestful\Webhooks\WebhookController();
-$result = $controller();
+try {
+    $controller = new PayPalRestful\Webhooks\WebhookController();
+    $result = $controller();
+} catch (\Throwable $e) {
+    // Return 500 so PayPal retries delivery; the INSERT IGNORE idempotency guard
+    // makes retries safe.  Log to the server error log, not to the HTTP response.
+    http_response_code(500);
+    trigger_error("ppr_webhook: unhandled exception: " . $e->getMessage(), E_USER_WARNING);
+}
 
 // properly shut down the application
 require 'includes/application_bottom.php';

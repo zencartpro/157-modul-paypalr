@@ -3,10 +3,10 @@
  * A class that returns an array of 'current' transactions for a specified order for
  * Cart processing for the PayPal Restful payment module's admin_notifications processing.
  *
- * @copyright Copyright 2023-2025 Zen Cart Development Team
+ * @copyright Copyright 2023-2026 Zen Cart Development Team
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  *
- * Last updated: v1.3.0
+ * Last updated: v1.3.6
  */
 namespace PayPalRestful\Admin;
 
@@ -183,7 +183,7 @@ class GetPayPalOrderTransactions
         if ($txns === false) {
             $error_info = $this->ppr->getErrorInfo();
             if ($error_info['name'] !== 'RESOURCE_NOT_FOUND') {
-                $this->messages->add(MODULE_PAYMENT_PAYPALR_TEXT_GETDETAILS_ERROR . "\n" . Logger::logJSON($error_info), 'error');
+                $this->messages->add(MODULE_PAYMENT_PAYPALR_TEXT_GETDETAILS_ERROR . "\n" . zen_output_string_protected(Logger::logJSON($error_info)), 'error');
             }
             return;
         }
@@ -216,7 +216,7 @@ class GetPayPalOrderTransactions
                     $this->updateRefunds($child_txns, $captures);
                     break;
                 default:
-                    $this->messages->add("Unknown payment record ($record_type) provided by PayPal.\n" . Logger::logJSON($child_txns, true), 'error');
+                    $this->messages->add('Unknown payment record (' . zen_output_string_protected($record_type) . ") provided by PayPal.\n" . zen_output_string_protected(Logger::logJSON($child_txns, true)), 'error');
                     break;
             }
         }
@@ -226,7 +226,7 @@ class GetPayPalOrderTransactions
     {
         foreach ($authorizations as $next_authorization) {
             $authorization_txn_id = $next_authorization['id'];
-            $first_auth_txn_id = $first_auth_txn_id ?? $authorization_txn_id;
+            $first_auth_txn_id ??= $authorization_txn_id;
             if ($this->transactionExists($authorization_txn_id) === true) {
                 continue;
             }
@@ -379,7 +379,7 @@ class GetPayPalOrderTransactions
             'notify_version' => $this->moduleVersion,
             'last_modified' => Helpers::convertPayPalDatePay2Db($paypal_response['update_time']),
         ];
-        zen_db_perform(TABLE_PAYPAL, $sql_data_array, 'update', "order_id={$this->oID} AND txn_id = '$parent_txn_id' LIMIT 1");
+        zen_db_perform(TABLE_PAYPAL, $sql_data_array, 'update', "order_id={$this->oID} AND txn_id = '" . zen_db_input($parent_txn_id) . "' LIMIT 1");
     }
 
     protected function getPaymentInfo(array $paypal_response): array

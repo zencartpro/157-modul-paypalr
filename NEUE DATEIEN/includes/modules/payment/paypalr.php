@@ -1,15 +1,14 @@
 <?php
 /**
- * paypalr.php payment module class for PayPal RESTful API payment method in Zen Cart German 1.5.7j
- * Zen Cart German Specific (zencartpro adaptations)
- *
+ * paypalr.php payment module class for PayPal RESTful API payment method in Zen Cart German 1.5.7k
+ * Zen Cart German Specific (zencartpro adaptations) 
  * @copyright Copyright 2003-2026 Zen Cart Development Team
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2026-06-03 09:11:14Z webchills $
+ * @version $Id: paypalpr.php 2026-07-03 09:11:14Z webchills $
  *
- * Last updated: v1.3.5
+ * Last updated: v1.3.6
  */
 use PayPalRestful\Admin\AdminMain;
 use PayPalRestful\Admin\DoAuthorization;
@@ -31,7 +30,7 @@ use PayPalRestful\Zc2Pp\CreatePayPalOrderRequest;
  */
 class paypalr extends base
 {
-    const CURRENT_VERSION = '1.3.5';
+    const CURRENT_VERSION = '1.3.6';
 
     const REDIRECT_LISTENER = HTTP_SERVER . DIR_WS_CATALOG . 'ppr_listener.php';
 
@@ -419,7 +418,7 @@ class paypalr extends base
             return;
         }
 
-        global $db;
+        global $db, $sniffer;
 
         // -----
         // Check for version-specific configuration updates.
@@ -461,7 +460,31 @@ class paypalr extends base
                             ('Shop (Sub-Brand) Kennung', 'MODULE_PAYMENT_PAYPALR_SOFT_DESCRIPTOR', 'Auf den Kreditkartenabrechnungen Ihrer Kunden wird Ihr Firmenname als <code>PAYPAL*(IhrName)*(Ihr-Submarkenname)</code> angezeigt (maximal 22 Zeichen für (IhrName)*(Ihr-Submarkenname)). Sie können hier den Submarkennamen hinzufügen, wenn Sie die Einkäufe in diesem Shop von anderen PayPal-Verkäufen unterscheiden möchten.', 43, now(), now())"
                     );
 		    
-	
+                /* falls through */
+
+                // -----
+                // v1.3.6/1.5.7k: Add UNIQUE constraint on paypal_webhooks.webhook_id so the
+                // idempotency guard in WebhookController::saveToDatabase() is atomic
+                // (duplicate inserts are rejected/ignored by the unique key).
+                //
+                // Deduplicate first: keep the earliest record for each event-id.
+                //
+                case version_compare(MODULE_PAYMENT_PAYPALR_VERSION, '1.3.3', '<'): //- Fall through from above
+                    defined('TABLE_PAYPAL_WEBHOOKS') or define('TABLE_PAYPAL_WEBHOOKS', DB_PREFIX . 'paypal_webhooks');
+                    if ($sniffer->table_exists(TABLE_PAYPAL_WEBHOOKS)) {
+                        $db->Execute(
+                            "DELETE w1 FROM " . TABLE_PAYPAL_WEBHOOKS . " w1
+                               INNER JOIN " . TABLE_PAYPAL_WEBHOOKS . " w2
+                                  ON w2.webhook_id = w1.webhook_id
+                                 AND w2.id < w1.id"
+                        );
+                        if ($sniffer->indexExists(TABLE_PAYPAL_WEBHOOKS, 'idx_pprwebhook_unique') === false) {
+                            $db->Execute(
+                                "ALTER TABLE " . TABLE_PAYPAL_WEBHOOKS . "
+                                   ADD UNIQUE KEY idx_pprwebhook_unique (webhook_id)"
+                            );
+                        }
+                    }
 
                 /* falls through */
                 default:
@@ -577,7 +600,7 @@ class paypalr extends base
         //
         // Determine which (live vs. sandbox) credentials are in use.
         //
-        list($client_id, $secret) = self::getEnvironmentInfo();
+        [$client_id, $secret] = self::getEnvironmentInfo();
 
         // -----
         // Ensure that the current environment's credentials are set and, if so,
@@ -1181,7 +1204,7 @@ class paypalr extends base
         // -----
         // If the order's request-creation resulted in a calculation mismatch,
         // send an alert if configured.
-        // Deactivated in 1.5.7j German to avoid useless email alerts
+        // Deactivated in 1.3.6 German to avoid useless email alerts
         $order_amount_mismatch = $create_order_request->getBreakdownMismatch();
 //        if (count($order_amount_mismatch) !== 0) {
 //            $this->sendAlertEmail(
@@ -1299,7 +1322,7 @@ class paypalr extends base
         return [
             'title' => '',
             'fields' => [
-                ['title' => MODULE_PAYMENT_PAYPALR_CC_OWNER, 'field' => '&nbsp;' . $_POST['paypalr_cc_owner']],
+                ['title' => MODULE_PAYMENT_PAYPALR_CC_OWNER, 'field' => '&nbsp;' . zen_output_string_protected($_POST['paypalr_cc_owner'])],
                 ['title' => MODULE_PAYMENT_PAYPALR_CC_TYPE, 'field' => '&nbsp;' . $this->ccInfo['type']],
                 ['title' => MODULE_PAYMENT_PAYPALR_CC_NUMBER, 'field' => '&nbsp;' . $this->obfuscateCcNumber($_POST['paypalr_cc_number'])],
                 [
@@ -1484,10 +1507,12 @@ class paypalr extends base
 
             $this->order_status = (int)MODULE_PAYMENT_PAYPALR_ORDER_PENDING_STATUS_ID;
             $order->info['order_status'] = $this->order_status;
-            // deactivated in 1.3.0 German to avoid useless email notifications
+            // deactivated in 1.3.6 German to avoid useless email notifications
             //this->orderInfo['admin_alert_needed'] = true;
             $this->orderInfo['admin_alert_needed'] = false;
             $this->log->write("==> paypalr::before_process ($payment_source): Payment status {$payment['status']} received from PayPal; order's status forced to pending.");
+
+
         }
 
         $this->notify('NOTIFY_PAYPALR_BEFORE_PROCESS_FINISHED', $this->orderInfo);
@@ -1829,6 +1854,7 @@ class paypalr extends base
      */
     public function after_order_create($orders_id)
     {
+        $orders_id = (int)$orders_id;
         $this->orderInfo['orders_id'] = $orders_id;
 
         $purchase_unit = $this->orderInfo['purchase_units'][0];
@@ -2326,6 +2352,13 @@ class paypalr extends base
         }
         $db->Execute("DELETE FROM " . TABLE_CONFIGURATION . " WHERE configuration_key LIKE 'MODULE\_PAYMENT\_PAYPALR\_%'");
         $db->Execute("DELETE FROM " . TABLE_CONFIGURATION_LANGUAGE . " WHERE configuration_key LIKE 'MODULE\_PAYMENT\_PAYPALR\_%'");
+        // -----
+        // Drop the webhook-log table created by this plugin.  It is not a Zen Cart
+        // core table, so removing it on uninstall avoids leaving orphaned data in
+        // the database.
+        //
+        defined('TABLE_PAYPAL_WEBHOOKS') or define('TABLE_PAYPAL_WEBHOOKS', DB_PREFIX . 'paypal_webhooks');
+        $db->Execute("DROP TABLE IF EXISTS " . TABLE_PAYPAL_WEBHOOKS);
         // -----
         // Starting with v1.1.1, removing the payment module includes deleting its root-directory
         // listener and webhook handlers, and the prior versions' ppr_webhook_main.php handler.

@@ -3,11 +3,11 @@
  * A class that provides the actions needed to capture an order placed with
  * the PayPal Restful payment module.
  *
- * @copyright Copyright 2023-2024 Zen Cart Development Team
+ * @copyright Copyright 2023-2026 Zen Cart Development Team
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: lat9 2023 Nov 16 Modified in v2.0.0 $
  *
- * Last updated: v1.0.0
+ * Last updated: v1.3.6
  */
 namespace PayPalRestful\Admin;
 
@@ -21,6 +21,9 @@ class DoCapture
     public function __construct(int $oID, PayPalRestfulApi $ppr, string $module_name, string $module_version)
     {
         global $db, $messageStack;
+        if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
+            return;
+        }
 
         if (!isset($_POST['ppr-amount'], $_POST['doCaptOid'], $_POST['auth_txn_id'], $_POST['ppr-capt-note']) || $oID !== (int)$_POST['doCaptOid']) {
             $messageStack->add_session(sprintf(MODULE_PAYMENT_PAYPALR_CAPTURE_PARAM_ERROR, 1), 'error');
@@ -52,7 +55,7 @@ class DoCapture
             return;
         }
 
-        $payer_note = $_POST['ppr-capt-note'];
+        $payer_note = strip_tags($_POST['ppr-capt-note']);
         $final_capture = isset($_POST['ppr-capt-final']);
         if ($capture_remaining_funds === true) {
             $capture_response = $ppr->capturePaymentRemaining($_POST['auth_txn_id'], $ppr_txns->getInvoiceId(), $payer_note, $final_capture);

@@ -3,11 +3,11 @@
  * A class that provides the actions needed to refund a payment for an order placed with
  * the PayPal Restful payment module.
  *
- * @copyright Copyright 2023-2024 Zen Cart Development Team
+ * @copyright Copyright 2023-2026 Zen Cart Development Team
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: lat9 2023 Nov 16 Modified in v2.0.0 $
  *
- * Last updated: v1.2.0
+ * Last updated: v1.3.6
  */
 namespace PayPalRestful\Admin;
 
@@ -21,6 +21,9 @@ class DoRefund
     public function __construct(int $oID, PayPalRestfulApi $ppr, string $module_name, string $module_version)
     {
         global $messageStack;
+        if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
+            return;
+        }
 
         if (!isset($_POST['ppr-amount'], $_POST['doRefundOid'], $_POST['capture_txn_id'], $_POST['ppr-refund-note']) || $oID !== (int)$_POST['doRefundOid']) {
             $messageStack->add_session(sprintf(MODULE_PAYMENT_PAYPALR_REFUND_PARAM_ERROR, 1), 'error');
@@ -49,7 +52,7 @@ class DoRefund
 
         $capture_currency = $capture_id_txn['mc_currency'];
 
-        $payer_note = $_POST['ppr-refund-note'];
+        $payer_note = strip_tags($_POST['ppr-refund-note']);
         $invoice_id = $ppr_txns->getInvoiceId();
 
         $full_refund = isset($_POST['ppr-refund-full']);

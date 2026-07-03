@@ -5,11 +5,11 @@
  * necessary steps for validation and dispatching based on the
  * nature of the webhook content.
  *
- * @copyright Copyright 2023-2025 Zen Cart Development Team
+ * @copyright Copyright 2023-2026 Zen Cart Development Team
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: DrByte June 2025 $
  *
- * Last updated: v1.2.2/v1.3.0
+ * Last updated: v1.3.6
  */
 
 namespace PayPalRestful\Webhooks;
@@ -26,10 +26,10 @@ class WebhookController
 
         // Inspect and collect webhook details
         $request_method = $_SERVER['REQUEST_METHOD'];
-        $request_headers = getallheaders();
-        $request_body = file_get_contents('php://input');
+        $request_headers = getallheaders() ?: [];
+        $request_body = file_get_contents('php://input') ?: '';
         $json_body = json_decode($request_body, true);
-        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $event = $json_body['event_type'] ?? '(event not determined)';
         $summary = $json_body['summary'] ?? '(summary not determined)';
         $logIdentifier = $json_body['id'] ?? $json_body['event_type'] ?? '';
@@ -38,7 +38,7 @@ class WebhookController
         $this->ppr_logger = new Logger($logIdentifier);
 
         // Enable logging, if enabled via configuration
-        if (strpos(MODULE_PAYMENT_PAYPALR_DEBUGGING, 'Log') === 0) {
+        if (str_starts_with(MODULE_PAYMENT_PAYPALR_DEBUGGING, 'Log')) {
             $this->ppr_logger->enableDebug();
         }
 
@@ -75,8 +75,35 @@ class WebhookController
 
         $this->ppr_logger->write("\n\n" . 'webhook verification passed', false, 'before');
 
-        // Log that we received a validated webhook
-        $this->saveToDatabase($user_agent, $request_method, $request_body, $request_headers);
+        // -----
+        // Idempotency guard. PayPal delivers webhook events at-least-once (it
+        // re-sends on timeout or any non-2xx response) and a signed payload can be
+        // replayed verbatim, so the same event-id must not be processed twice.
+        // Re-processing would create duplicate order-status records, re-send
+        // customer/merchant emails and re-fire the funds-captured notifier.
+        //
+        // The primary gate is the UNIQUE(webhook_id) constraint on the table: we
+        // attempt the INSERT first; if it raises a duplicate-key error the event
+        // was already recorded and we return early.  This is atomic — two
+        // simultaneous deliveries of the same event-id both attempt the INSERT
+        // and exactly one succeeds.  The pre-flight alreadyProcessed() SELECT
+        // is retained as a fast-path to avoid the DB exception overhead for the
+        // common case of a sequential retry.
+        //
+        $this->createDatabaseTable();
+        $webhook_id = substr((string)($json_body['id'] ?? ''), 0, 64);
+        if ($webhook_id !== '' && $this->alreadyProcessed($webhook_id)) {
+            $this->ppr_logger->write("ppr_webhook DUPLICATE event ignored (webhook_id: $webhook_id).", false, 'before');
+            return true;
+        }
+
+        // Log that we received a validated webhook; treat a duplicate-key error
+        // (two simultaneous deliveries that both passed the SELECT above) as an
+        // already-processed event.
+        if ($this->saveToDatabase($user_agent, $request_method, $request_body, $request_headers) === false) {
+            $this->ppr_logger->write("ppr_webhook DUPLICATE event ignored on INSERT (webhook_id: $webhook_id).", false, 'before');
+            return true;
+        }
 
         // Now that verification has passed, dispatch the webhook according to the declared event_type
         return $this->dispatch($event, $webhook);
@@ -115,10 +142,15 @@ class WebhookController
     }
 
     /**
-     * Save webhook records to database for subsequent querying
+     *
+     * Returns true on success, false if the INSERT fails on the UNIQUE(webhook_id)
+     * constraint — which means the event was already recorded by a concurrent
+     * delivery and the caller should treat it as a duplicate.
+     *
      */
     protected function saveToDatabase(string $user_agent, string $request_method, string $request_body, $request_headers)
     {
+        global $db;
         $json_body = json_decode($request_body, true);
 
         $sql_data_array = [
@@ -133,8 +165,39 @@ class WebhookController
         // ensure table exists
         $this->createDatabaseTable();
 
-        // store
-        zen_db_perform(TABLE_PAYPAL_WEBHOOKS, $sql_data_array);
+        // -----
+        // Use INSERT IGNORE so a duplicate webhook_id (UNIQUE constraint) silently
+        // fails instead of throwing a DB exception.  We detect the duplicate by
+        // checking whether any row was actually inserted (affected_rows = 0 on skip).
+        //
+        $columns_sql = implode(', ', array_keys($sql_data_array));
+        $values_sql  = implode(', ', array_map(
+            static fn($v) => "'" . $db->prepare_input((string)$v) . "'",
+            $sql_data_array
+        ));
+        $db->Execute("INSERT IGNORE INTO " . TABLE_PAYPAL_WEBHOOKS . " ($columns_sql) VALUES ($values_sql)");
+        return $db->affectedRows() > 0;
+    }
+
+    /**
+     * Determine whether a webhook event-id has already been recorded.
+     *
+     * Used for idempotency: PayPal re-delivers events and a signed payload can be
+     * replayed, so the same event-id must not be processed twice. The caller is
+     * responsible for ensuring the table exists (see createDatabaseTable()).
+     */
+    protected function alreadyProcessed(string $webhook_id)
+    {
+        global $db;
+
+        $webhook_id = $db->prepare_input($webhook_id);
+        $existing = $db->ExecuteNoCache(
+            "SELECT id
+               FROM " . TABLE_PAYPAL_WEBHOOKS . "
+              WHERE webhook_id = '$webhook_id'
+              LIMIT 1"
+        );
+        return !$existing->EOF;
     }
 
     /**
@@ -154,6 +217,7 @@ class WebhookController
                 request_method VARCHAR(32) DEFAULT NULL,
                 request_headers TEXT DEFAULT NULL,
                 PRIMARY KEY (id),
+                UNIQUE KEY idx_pprwebhook_unique (webhook_id),
                 KEY idx_pprwebhook_zen (webhook_id, id, created_at)
             )"
         );

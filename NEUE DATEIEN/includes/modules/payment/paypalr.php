@@ -6,9 +6,9 @@
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2026-07-03 09:11:14Z webchills $
+ * @version $Id: paypalpr.php 2026-09-04 08:11:14Z webchills $
  *
- * Last updated: v1.3.6
+ * Last updated: v1.3.7
  */
 use PayPalRestful\Admin\AdminMain;
 use PayPalRestful\Admin\DoAuthorization;
@@ -30,7 +30,7 @@ use PayPalRestful\Zc2Pp\CreatePayPalOrderRequest;
  */
 class paypalr extends base
 {
-    const CURRENT_VERSION = '1.3.6';
+    const CURRENT_VERSION = '1.3.7';
 
     const REDIRECT_LISTENER = HTTP_SERVER . DIR_WS_CATALOG . 'ppr_listener.php';
 
@@ -478,7 +478,7 @@ class paypalr extends base
                                   ON w2.webhook_id = w1.webhook_id
                                  AND w2.id < w1.id"
                         );
-                        if ($sniffer->indexExists(TABLE_PAYPAL_WEBHOOKS, 'idx_pprwebhook_unique') === false) {
+                        if ($this->indexExists(TABLE_PAYPAL_WEBHOOKS, 'idx_pprwebhook_unique') === false) {
                             $db->Execute(
                                 "ALTER TABLE " . TABLE_PAYPAL_WEBHOOKS . "
                                    ADD UNIQUE KEY idx_pprwebhook_unique (webhook_id)"
@@ -502,6 +502,20 @@ class paypalr extends base
               WHERE configuration_key = 'MODULE_PAYMENT_PAYPALR_VERSION'
               LIMIT 1"
         );
+    }
+
+    /**
+     * @since ZC v1.5.7k, paypalr v1.3.6
+     */
+    protected function indexExists(string $table_name, string $index_name): bool
+    {
+        global $db;
+
+        $check = $db->Execute(
+            'SHOW INDEX FROM `' . $db->prepare_input($table_name) . '` ' .
+            "WHERE `Key_name` = '" . $db->prepare_input($index_name) . "'"
+        );
+        return !$check->EOF;
     }
 
     protected function checkCardsAcceptedForSite(): bool
@@ -1179,11 +1193,16 @@ class paypalr extends base
         $order_info = $this->getOrderTotalsInfo();
 
         // -----
-        // Create a GUID (Globally Unique IDentifier) for the order's
+        // Build the request for the PayPal order's initial creation.
+        //
+        global $order, $zcObserverPaypalrestful;
+        $create_order_request = new CreatePayPalOrderRequest($ppr_type, $order, $this->ccInfo, $order_info, $zcObserverPaypalrestful->getOrderTotalChanges());
+
+        // -----
+        // Create a GUID (Globally Unique IDentifier) for the PayPal order's
         // current 'state'.
         //
-        global $order;
-        $order_guid = $this->createOrderGuid($order, $ppr_type);
+        $order_guid = $this->createOrderGuid($create_order_request->get());
 
         // -----
         // If the PayPal order been previously created and the order's GUID
@@ -1196,15 +1215,11 @@ class paypalr extends base
         }
 
         // -----
-        // Build the request for the PayPal order's initial creation.
-        //
-        global $zcObserverPaypalrestful;
-        $create_order_request = new CreatePayPalOrderRequest($ppr_type, $order, $this->ccInfo, $order_info, $zcObserverPaypalrestful->getOrderTotalChanges());
 
-        // -----
+        
         // If the order's request-creation resulted in a calculation mismatch,
         // send an alert if configured.
-        // Deactivated in 1.3.6 German to avoid useless email alerts
+        // Deactivated in 1.5.7k German to avoid useless email alerts
         $order_amount_mismatch = $create_order_request->getBreakdownMismatch();
 //        if (count($order_amount_mismatch) !== 0) {
 //            $this->sendAlertEmail(
@@ -1282,20 +1297,16 @@ class paypalr extends base
 
     // -----
     // Create an idempotent GUID to accompany the to-be-created PayPal order by
-    // hashing the base order's information and, if paying via card, the card
-    // information as well.
+    // hashing the PayPal request.
     //
     // Note: Including the transaction-mode (AUTHORIZE vs. CAPTURE), too ... just
     // in case the site changes that mode while a customer's order is in-progress.
     //
-    protected function createOrderGuid(\order $order, string $ppr_type): string
+    protected function createOrderGuid(array $paypal_order_request): string
     {
         $_SESSION['PayPalRestful']['CompletedOrders'] = $_SESSION['PayPalRestful']['CompletedOrders'] ?? 0;
-        unset($order->info['ip_address']);
-        $hash_data = MODULE_PAYMENT_PAYPALR_TRANSACTION_MODE . json_encode($order) . $_SESSION['securityToken'] . $_SESSION['PayPalRestful']['CompletedOrders'];
-        if ($ppr_type !== 'paypal') {
-            $hash_data .= json_encode($this->ccInfo);
-        }
+        unset($paypal_order_request['purchase_units'][0]['invoice_id']);
+        $hash_data = MODULE_PAYMENT_PAYPALR_TRANSACTION_MODE . json_encode($paypal_order_request) . $_SESSION['securityToken'] . $_SESSION['PayPalRestful']['CompletedOrders'];
         $hash = hash('sha256', $hash_data);
         return
             substr($hash,  0,  8) . '-' .
@@ -1507,7 +1518,7 @@ class paypalr extends base
 
             $this->order_status = (int)MODULE_PAYMENT_PAYPALR_ORDER_PENDING_STATUS_ID;
             $order->info['order_status'] = $this->order_status;
-            // deactivated in 1.3.6 German to avoid useless email notifications
+            // deactivated in 1.5.7k German to avoid useless email notifications
             //this->orderInfo['admin_alert_needed'] = true;
             $this->orderInfo['admin_alert_needed'] = false;
             $this->log->write("==> paypalr::before_process ($payment_source): Payment status {$payment['status']} received from PayPal; order's status forced to pending.");
@@ -1594,16 +1605,15 @@ class paypalr extends base
         $order->info['cc_expires'] = ''; //- $this->ccInfo['expiry_month'] . substr($this->ccInfo['expiry_year'], -2);
 
         // -----
-        // Create a GUID (Globally Unique IDentifier) for the order's
-        // current 'state'.
-        //
-        $order_guid = $this->createOrderGuid($order, 'card');
-
-        // -----
         // Build the request for the PayPal card-payment order's creation.
         //
         global $zcObserverPaypalrestful;
         $create_order_request = new CreatePayPalOrderRequest('card', $order, $this->ccInfo, $order_info, $zcObserverPaypalrestful->getOrderTotalChanges());
+        // -----
+        // Create a GUID (Globally Unique IDentifier) for the order's
+        // current 'state'.
+        //
+        $order_guid = $this->createOrderGuid($create_order_request->get());
 
         // -----
         // Send the request off to register the credit-card order at PayPal.
@@ -1753,7 +1763,7 @@ class paypalr extends base
                         break;
 
                     case '00N7':    //- CVV check failed
-                    case '1380':    //- Invalid card verification value
+                    case '1382':    //- Invalid card verification value
                     case '5110':    //- CVV check failed
                         $response_message = sprintf(MODULE_PAYMENT_PAYPALR_TEXT_CVV_FAILED, $card_type, $last_digits);
                         break;

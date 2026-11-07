@@ -6,9 +6,9 @@
  * Zen Cart German Version - www.zen-cart-pro.at
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart-pro.at/license/3_0.txt GNU General Public License V3.0
- * @version $Id: paypalpr.php 2026-09-04 08:11:14Z webchills $
+ * @version $Id: paypalpr.php 2026-11-07 16:11:14Z webchills $
  *
- * Last updated: v1.3.7
+ * Last updated: v1.3.8
  */
 use PayPalRestful\Admin\AdminMain;
 use PayPalRestful\Admin\DoAuthorization;
@@ -1444,15 +1444,16 @@ class paypalr extends base
         // Note: That method won't return here if an issue was found with the
         // credit-card or if a 3DS verification is required.
         //
-        $payment_source = $_SESSION['PayPalRestful']['Order']['payment_source'];
+        $payment_source = $_SESSION['PayPalRestful']['Order']['payment_source'] ?? '';
         if ($payment_source === 'card') {
             $response = $this->createCreditCardOrder($order, $order_info);
 
         // -----
-        // Otherwise, the customer's paying with their PayPal Wallet.
+        // Otherwise, either PayPal's session-based order has "gone missing" or
+        // the customer's paying with their PayPal Wallet.
         //
         } else {
-            if (!isset($_SESSION['PayPalRestful']['Order']['status']) || $_SESSION['PayPalRestful']['Order']['status'] !== PayPalRestfulApi::STATUS_APPROVED) {
+            if ($payment_source === '' || !isset($_SESSION['PayPalRestful']['Order']['status']) || $_SESSION['PayPalRestful']['Order']['status'] !== PayPalRestfulApi::STATUS_APPROVED) {
                 $this->log->write('paypalr::before_process, cannot capture/authorize paypal order; wrong status' . "\n" . Logger::logJSON($_SESSION['PayPalRestful']['Order'] ?? []));
                 unset($_SESSION['PayPalRestful']['Order'], $_SESSION['payment']);
                 $this->setMessageAndRedirect(MODULE_PAYMENT_PAYPALR_TEXT_STATUS_MISMATCH . "\n" . MODULE_PAYMENT_PAYPALR_TEXT_TRY_AGAIN, FILENAME_CHECKOUT_PAYMENT);
